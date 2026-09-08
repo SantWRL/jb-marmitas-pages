@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JB Marmitas - Cardápio</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+
+  <header class="header-banner"></header>
+  
+  <section class="company-info">
+    <img class="company-logo" src="assets/img/logo.svg" alt="Logo JB Marmitas" />
+    <h1>JB Marmitas</h1>
+    <p>Marmitas caseiras feitas no dia • Segunda a sábado, das 11h às 14h30 • Picos - PI</p>
+    <div class="top-actions">
+      <span class="status-badge">Aberto para pedidos</span>
+      <a href="adm.html" class="nav-link-btn">🔑 ÁREA ADMIN</a>
+    </div>
+    <div class="contact-actions">
+      <a class="contact-link whatsapp-link" href="https://wa.me/558999195466" target="_blank" rel="noopener noreferrer">Falar com Teresa no WhatsApp</a>
+      <a class="contact-link portfolio-link" href="https://santwrl.github.io/SantWRL/" target="_blank" rel="noopener noreferrer">Portfólio</a>
+    </div>
+  </section>
+
+  <nav class="categories-bar">
+    <button class="category-btn active" data-category="pratos">Pratos do Dia</button>
+    <button class="category-btn" data-category="bebidas">Bebidas</button>
+  </nav>
+
+  <main class="container">
+    <div id="menu-container"></div>
+  </main>
+
+  <div class="cart-bar">
+    <button class="cart-button" id="cart-btn">
+      <span class="cart-count" id="cart-count">0 itens</span>
+      <span>Enviar Pedido WhatsApp</span>
+      <span id="cart-total">R$ 0,00</span>
+    </button>
+  </div>
+
+  <script type="module" src="assets/js/client.js"></script>
+</body>
+</html>
