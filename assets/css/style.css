@@ -135,10 +135,6 @@ body {
   background-color: var(--whatsapp);
 }
 
-.portfolio-link {
-  background-color: #24292f;
-}
-
 .categories-bar {
   position: sticky;
   top: 0;
@@ -180,6 +176,38 @@ body {
 .menu-heading h2 {
   margin-top: 4px;
   font-size: 1.55rem;
+}
+
+.service-info {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+}
+
+.service-info-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.service-icon {
+  color: var(--primary);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.service-info strong {
+  font-size: .86rem;
+}
+
+.service-info p {
+  color: var(--text-muted);
+  font-size: .76rem;
+  line-height: 1.35;
+  margin-top: 3px;
 }
 
 /* FORMULÁRIO DO ADMIN */
@@ -507,5 +535,9 @@ body {
   .product-image {
     width: 92px;
     height: 92px;
+  }
+
+  .service-info {
+    grid-template-columns: 1fr;
   }
 }

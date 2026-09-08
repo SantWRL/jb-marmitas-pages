@@ -50,7 +50,8 @@ describe('Suíte de Testes Automatizados - Marmitaria', () => {
     const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
     expect(html).toContain('https://wa.me/558999195466');
-    expect(html).toContain('https://santwrl.github.io/SantWRL/');
+    expect(html).not.toContain('santwrl.github.io/SantWRL');
+    expect(html).toContain('Pedir pelo WhatsApp');
     expect(html).toContain('assets/img/logo.svg');
   });
 
