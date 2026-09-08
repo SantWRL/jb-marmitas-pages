@@ -44,6 +44,8 @@ describe('Suíte de Testes Automatizados - Marmitaria', () => {
     expect(url).toContain('https://wa.me/558999195466?text=');
     expect(message).toContain('*Cliente:* Teresa');
     expect(message).toContain('*Endereço:* Rua Central');
+    expect(message).toContain('*PAGAMENTO VIA PIX:* 558999195466');
+    expect(message).toContain('envie o comprovante nesta conversa');
   });
 
   test('Deve manter os links públicos essenciais no site', () => {
@@ -53,6 +55,8 @@ describe('Suíte de Testes Automatizados - Marmitaria', () => {
     expect(html).not.toContain('santwrl.github.io/SantWRL');
     expect(html).toContain('Pedir pelo WhatsApp');
     expect(html).toContain('assets/img/logo.svg');
+    expect(html).toContain('property="og:title"');
+    expect(html).toContain('name="theme-color" content="#121212"');
   });
 
 });

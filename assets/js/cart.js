@@ -43,6 +43,8 @@ export function formatWhatsAppMessage(cart, clientName, clientAddress, phone) {
   message += `\n*TOTAL:* ${formatPrice(total)}`;
   if (clientName) message += `\n\n*Cliente:* ${clientName}`;
   if (clientAddress) message += `\n*Endereço:* ${clientAddress}`;
+  message += `\n\n*PAGAMENTO VIA PIX:* ${phone}`;
+  message += `\nApós o pagamento, envie o comprovante nesta conversa.`;
 
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }

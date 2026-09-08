@@ -40,6 +40,7 @@ function renderMenu() {
           <button class="btn-qty btn-minus" data-id="${product.id}" ${product.outOfStock ? 'disabled' : ''}>-</button>
           <span class="qty-display">${qty}</span>
           <button class="btn-qty btn-plus" data-id="${product.id}" ${product.outOfStock ? 'disabled' : ''}>+</button>
+          <button class="btn-order" data-id="${product.id}" ${product.outOfStock ? 'disabled' : ''}>Pedir</button>
         </div>
       </div>
       <img class="product-image" src="${product.image}" alt="${product.name}" />
@@ -53,6 +54,14 @@ function renderMenu() {
 }
 
 function bindEvents() {
+  document.querySelectorAll('.btn-order').forEach(btn => {
+    btn.onclick = () => {
+      const product = getProducts().find(p => p.id === btn.dataset.id);
+      cart = addItem(cart, product);
+      renderMenu();
+    };
+  });
+
   document.querySelectorAll('.btn-plus').forEach(btn => {
     btn.onclick = () => {
       const product = getProducts().find(p => p.id === btn.dataset.id);
@@ -98,7 +107,9 @@ document.querySelectorAll('.category-btn').forEach(btn => {
 document.getElementById('cart-btn').onclick = () => {
   if (Object.keys(cart).length === 0) return;
   const name = prompt("Digite seu nome:");
-  const address = prompt("Digite seu endereço:");
+  if (!name) return;
+  const address = prompt("Digite seu endereço completo em Balsas - MA (rua, número e bairro):");
+  if (!address) return;
   const url = formatWhatsAppMessage(cart, name, address, WHATSAPP_NUMBER);
   window.open(url, '_blank');
 };

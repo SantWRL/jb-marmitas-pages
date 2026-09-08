@@ -36,7 +36,11 @@ body {
   margin: 0 auto;
   padding: 38px 22px;
   color: #fff;
-  font-size: .72rem;
+  min-height: 78px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .03);
   font-weight: bold;
   letter-spacing: 2px;
 }
@@ -52,6 +56,26 @@ body {
 .company-logo {
   width: 112px;
   height: 130px;
+.service-link,
+.pix-key,
+.service-info small {
+  display: block;
+  margin-top: 7px;
+  font-size: .72rem;
+}
+.service-link {
+  color: var(--store-yellow, var(--primary));
+  font-weight: 700;
+  text-decoration: none;
+}
+.pix-key {
+  color: var(--store-yellow, var(--primary));
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+}
+.service-info small {
+  color: #999;
+}
   border-radius: 50%;
   border: 5px solid var(--bg);
   margin-top: -48px;
@@ -113,6 +137,257 @@ body {
   padding: 4px 10px;
   border-radius: 3px;
 }
+
+.storefront {
+  --store-bg: #121212;
+    --store-card: #1e1e1e;
+    --store-yellow: #ffc107;
+    --store-orange: #ff5722;
+    --store-text: #ffffff;
+    background: var(--store-bg);
+    color: var(--store-text);
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .storefront h1,
+  .storefront h2,
+  .storefront h3,
+  .storefront .hashtag,
+  .storefront .store-kicker,
+  .storefront .category-btn,
+  .storefront .hero-button,
+  .storefront .btn-order {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .storefront .header-banner {
+    height: 430px;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(90deg, rgba(12, 12, 12, .96), rgba(12, 12, 12, .58)), url('../img/marmita-placeholder.svg') center / cover;
+  }
+
+  .hero-content {
+    width: min(920px, 100%);
+    margin: 0 auto;
+    padding: 24px 22px;
+  }
+
+  .hero-content .hashtag,
+  .diferenciais .hashtag {
+    color: var(--store-yellow);
+    font-size: .78rem;
+  }
+
+  .hero-content h1 {
+    max-width: 650px;
+    margin: 12px 0;
+    color: #fff;
+    font-size: clamp(2.2rem, 6vw, 4.6rem);
+    line-height: .98;
+  }
+
+  .hero-content p {
+    max-width: 470px;
+    color: #dedede;
+    font-size: 1rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+
+  .hero-button {
+    display: inline-block;
+    padding: 13px 18px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: .76rem;
+  }
+
+  .hero-button-primary {
+    background: var(--store-orange);
+    color: #fff;
+  }
+
+  .hero-button-secondary {
+    border: 1px solid var(--store-yellow);
+    color: var(--store-yellow);
+  }
+
+  .storefront .company-info {
+    max-width: 920px;
+    background: var(--store-bg);
+    color: var(--store-text);
+  }
+
+  .storefront .company-info h2 {
+    font-size: 2rem;
+  }
+
+  .storefront .company-info p:not(.store-kicker),
+  .storefront .product-description,
+  .storefront .service-info p {
+    color: #bdbdbd;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .storefront .store-kicker,
+  .storefront .menu-heading span {
+    color: var(--store-yellow);
+  }
+
+  .storefront .categories-bar {
+    background: #181818;
+    border-color: #333;
+  }
+
+  .storefront .category-btn {
+    color: #a8a8a8;
+  }
+
+  .storefront .category-btn.active {
+    color: var(--store-yellow);
+    border-color: var(--store-yellow);
+  }
+
+  .storefront .container {
+    background: var(--store-bg);
+  }
+
+  .storefront .product-card {
+    background: var(--store-card);
+    border-color: #333;
+    transition: transform .25s ease, border-color .25s ease;
+  }
+
+  .storefront .product-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--store-yellow);
+  }
+
+  .storefront .product-title {
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .storefront .product-price {
+    color: var(--store-yellow);
+  }
+
+  .storefront .btn-qty {
+    background: #333;
+    color: #fff;
+  }
+
+  .storefront .btn-order {
+    margin-left: auto;
+    border: 0;
+    border-radius: 4px;
+    padding: 7px 10px;
+    background: var(--store-orange);
+    color: #fff;
+    cursor: pointer;
+    font-size: .68rem;
+  }
+
+  .storefront .btn-order:disabled {
+    cursor: not-allowed;
+    opacity: .5;
+  }
+
+  .storefront .service-info {
+    border-color: #333;
+  }
+
+  .diferenciais {
+    padding: 60px 22px;
+    background: #181818;
+    text-align: center;
+  }
+
+  .diferenciais-container {
+    max-width: 920px;
+    margin: 0 auto;
+  }
+
+  .diferenciais h2 {
+    max-width: 620px;
+    margin: 8px auto 34px;
+    color: #fff;
+    font-size: 2rem;
+  }
+
+  .cards-diferenciais {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .card-diferencial {
+    padding: 28px 20px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background: var(--store-card);
+    text-align: left;
+    transition: transform .25s ease, border-color .25s ease;
+  }
+
+  .card-diferencial:hover {
+    transform: translateY(-6px);
+    border-color: var(--store-yellow);
+  }
+
+  .icone-box {
+    margin-bottom: 20px;
+    color: var(--store-orange);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 900;
+  }
+
+  .card-diferencial h3 {
+    margin-bottom: 10px;
+    color: #fff;
+    font-size: 1rem;
+  }
+
+  .card-diferencial p {
+    color: #aaa;
+    font-size: .86rem;
+    line-height: 1.5;
+  }
+
+  .storefront .cart-bar {
+    background: #181818;
+    border-color: #333;
+  }
+
+  .storefront .cart-button {
+    background: var(--store-orange);
+  }
+
+  @media (max-width: 650px) {
+    .storefront .header-banner {
+      height: 390px;
+    }
+
+    .hero-content h1 {
+      font-size: 2.4rem;
+    }
+
+    .cards-diferenciais {
+      grid-template-columns: 1fr;
+    }
+  }
 
 .contact-actions {
   display: flex;

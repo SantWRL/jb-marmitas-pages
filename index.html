@@ -3,22 +3,43 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JB Marmitas | Comida caseira em Picos</title>
-  <meta name="description" content="Peça sua marmita caseira da JB Marmitas. Refeições saborosas preparadas no dia e entregues em Picos - PI." />
+  <title>JB Marmitas | Comida caseira em Balsas</title>
+  <meta name="description" content="Peça sua marmita caseira da JB Marmitas. Refeições saborosas preparadas no dia e entregues em Balsas - MA." />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#121212" />
+  <meta name="twitter:card" content="summary" />
+  <meta property="og:title" content="JB Marmitas | Comida caseira em Balsas" />
+  <meta property="og:description" content="Marmitas caseiras preparadas no dia. Peça pelo WhatsApp." />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:site_name" content="JB Marmitas" />
+  <meta property="og:image" content="assets/img/logo.svg" />
+  <meta property="og:image:alt" content="Logo JB Marmitas" />
+  <link rel="icon" href="assets/img/logo.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/img/logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/style.css" />
 </head>
-<body>
+<body class="storefront">
 
   <header class="header-banner">
-    <div class="header-overlay">
-      <span>COMIDA DE VERDADE, FEITA COM CARINHO</span>
+    <div class="hero-content">
+      <span class="hashtag">#MARMITADEVERDADE</span>
+      <h1>A MARMITA MAIS RECHEADA DA REGIÃO</h1>
+      <p>Comida caseira de verdade, feita no dia e pronta para chegar quentinha.</p>
+      <div class="hero-actions">
+        <a class="hero-button hero-button-primary" href="https://wa.me/558999195466?text=Ol%C3%A1%2C%20quero%20pedir%20uma%20marmita%21" target="_blank" rel="noopener noreferrer">Pedir agora</a>
+        <a class="hero-button hero-button-secondary" href="#cardapio">Ver cardápio</a>
+      </div>
     </div>
   </header>
   
   <section class="company-info">
     <img class="company-logo" src="assets/img/logo.svg" alt="Logo JB Marmitas" />
-    <p class="store-kicker">MARMITARIA CASEIRA EM PICOS</p>
-    <h1>JB Marmitas</h1>
+    <p class="store-kicker">MARMITARIA CASEIRA EM BALSAS - MA</p>
+    <h2>JB Marmitas</h2>
     <p>Marmitas caseiras feitas no dia. Segunda a sábado, das 11h às 14h30.</p>
     <div class="top-actions">
       <span class="status-badge"><span class="status-dot"></span> Aberto para pedidos</span>
@@ -29,7 +50,7 @@
     </div>
   </section>
 
-  <nav class="categories-bar">
+  <nav id="cardapio" class="categories-bar">
     <button class="category-btn active" data-category="pratos">Pratos do Dia</button>
     <button class="category-btn" data-category="bebidas">Bebidas</button>
   </nav>
@@ -48,14 +69,38 @@
       </div>
       <div class="service-info-item">
         <span class="service-icon" aria-hidden="true">⌖</span>
-        <div><strong>Entrega</strong><p>Consulte bairros e taxa pelo WhatsApp</p></div>
+        <div><strong>Entrega em Balsas</strong><p>Consulte bairros e taxa pelo WhatsApp</p><a class="service-link" href="https://www.google.com/maps/search/?api=1&query=Balsas%2C%20Maranh%C3%A3o" target="_blank" rel="noopener noreferrer">Ver Balsas no mapa</a></div>
       </div>
       <div class="service-info-item">
         <span class="service-icon" aria-hidden="true">$</span>
-        <div><strong>Pagamento</strong><p>Pix, cartão e dinheiro</p></div>
+        <div><strong>Pagamento fácil</strong><p>Pix, cartão e dinheiro</p><span class="pix-key">Pix: 558999195466</span><small>Envie o comprovante pelo WhatsApp</small></div>
       </div>
     </section>
   </main>
+
+  <section class="diferenciais">
+    <div class="diferenciais-container">
+      <span class="hashtag">#COMIDADEVERDADE</span>
+      <h2>POR QUE O NOSSO SABOR É DIFERENTE?</h2>
+      <div class="cards-diferenciais">
+        <article class="card-diferencial">
+          <div class="icone-box" aria-hidden="true">01</div>
+          <h3>SABOR CASEIRO</h3>
+          <p>Temperos naturais e preparo cuidadoso para lembrar a comida feita em casa.</p>
+        </article>
+        <article class="card-diferencial">
+          <div class="icone-box" aria-hidden="true">02</div>
+          <h3>MUITO RECHEIO</h3>
+          <p>Porções generosas e bem servidas para matar sua fome de verdade.</p>
+        </article>
+        <article class="card-diferencial">
+          <div class="icone-box" aria-hidden="true">03</div>
+          <h3>ENTREGA RÁPIDA</h3>
+          <p>Sua marmita chega quentinha, pronta para você aproveitar cada garfada.</p>
+        </article>
+      </div>
+    </div>
+  </section>
 
   <div class="cart-bar">
     <button class="cart-button" id="cart-btn">
