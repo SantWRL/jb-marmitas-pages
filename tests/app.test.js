@@ -54,6 +54,11 @@ describe('Suíte de Testes Automatizados - Marmitaria', () => {
 
     const cashUrl = formatWhatsAppMessage(cart, 'Teresa', 'Rua Central', '558999195466', 'Dinheiro. Troco para: R$ 50,00');
     expect(decodeURIComponent(cashUrl.split('?text=')[1])).toContain('Troco para: R$ 50,00');
+
+    const deliveryUrl = formatWhatsAppMessage(cart, 'Teresa', 'Rua Central', '558999195466', '', 'Próximo à praça', 'Sim');
+    const deliveryMessage = decodeURIComponent(deliveryUrl.split('?text=')[1]);
+    expect(deliveryMessage).toContain('*Ponto de referência:* Próximo à praça');
+    expect(deliveryMessage).toContain('*Talher:* Sim');
   });
 
   test('Deve manter os links públicos essenciais no site', () => {
@@ -69,6 +74,8 @@ describe('Suíte de Testes Automatizados - Marmitaria', () => {
     expect(html).toContain('Ver cardápio');
     expect(html).toContain('id="order-form"');
     expect(html).toContain('Endereço em Balsas - MA');
+    expect(html).toContain('Ponto de referência');
+    expect(html).toContain('Vai querer talher?');
     expect(html).toContain('Pix: 558999195466');
     expect(html).toContain('Vai precisar de troco para quanto?');
   });

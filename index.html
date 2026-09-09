@@ -120,6 +120,12 @@
       <form id="order-form">
         <label class="order-field">Seu nome<input id="customer-name" type="text" autocomplete="name" required /></label>
         <label class="order-field">Endereço em Balsas - MA<input id="customer-address" type="text" placeholder="Rua, número e bairro" autocomplete="street-address" required /></label>
+        <label class="order-field">Ponto de referência<input id="customer-reference" type="text" placeholder="Ex.: próximo à praça" required /></label>
+        <label class="order-field">Vai querer talher?<select id="cutlery-choice" required>
+          <option value="">Selecione uma opção</option>
+          <option value="sim">Sim, quero talher</option>
+          <option value="nao">Não preciso de talher</option>
+        </select></label>
         <label class="order-field">Forma de pagamento<select id="payment-method" required>
           <option value="">Selecione uma opção</option>
           <option value="pix">Pix</option>

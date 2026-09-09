@@ -132,7 +132,9 @@ document.getElementById('order-form').onsubmit = (event) => {
 
   const name = document.getElementById('customer-name').value.trim();
   const address = document.getElementById('customer-address').value.trim();
-  const url = formatWhatsAppMessage(cart, name, address, WHATSAPP_NUMBER, paymentDetails);
+  const reference = document.getElementById('customer-reference').value.trim();
+  const cutlery = document.getElementById('cutlery-choice').value === 'sim' ? 'Sim' : 'Não';
+  const url = formatWhatsAppMessage(cart, name, address, WHATSAPP_NUMBER, paymentDetails, reference, cutlery);
   closeOrderModal();
   window.open(url, '_blank');
 };
