@@ -31,7 +31,7 @@ export function removeItem(cart, productId) {
   return updatedCart;
 }
 
-export function formatWhatsAppMessage(cart, clientName, clientAddress, phone) {
+export function formatWhatsAppMessage(cart, clientName, clientAddress, phone, paymentDetails = '') {
   let message = "*NOVO PEDIDO DE MARMITA*\n\n";
   const total = calculateTotal(cart);
 
@@ -43,8 +43,7 @@ export function formatWhatsAppMessage(cart, clientName, clientAddress, phone) {
   message += `\n*TOTAL:* ${formatPrice(total)}`;
   if (clientName) message += `\n\n*Cliente:* ${clientName}`;
   if (clientAddress) message += `\n*Endereço:* ${clientAddress}`;
-  message += `\n\n*PAGAMENTO VIA PIX:* ${phone}`;
-  message += `\nApós o pagamento, envie o comprovante nesta conversa.`;
+  if (paymentDetails) message += `\n\n*Pagamento:* ${paymentDetails}`;
 
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }

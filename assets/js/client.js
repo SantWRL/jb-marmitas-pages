@@ -95,6 +95,48 @@ function updateCartBar() {
   }
 }
 
+function openOrderModal() {
+  const modal = document.getElementById('order-modal');
+  const summary = document.getElementById('order-summary');
+  const quantity = Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
+  summary.textContent = `${quantity} item${quantity !== 1 ? 's' : ''} no pedido • ${formatPrice(calculateTotal(cart))}`;
+  modal.hidden = false;
+  document.getElementById('customer-name').focus();
+}
+
+function closeOrderModal() {
+  document.getElementById('order-modal').hidden = true;
+}
+
+document.querySelectorAll('[data-close-order]').forEach(element => {
+  element.onclick = closeOrderModal;
+});
+
+document.getElementById('payment-method').onchange = (event) => {
+  const payment = event.target.value;
+  document.getElementById('pix-note').hidden = payment !== 'pix';
+  document.getElementById('card-note').hidden = payment !== 'cartao';
+  document.getElementById('cash-change-field').hidden = payment !== 'dinheiro';
+  document.getElementById('cash-change').required = payment === 'dinheiro';
+};
+
+document.getElementById('order-form').onsubmit = (event) => {
+  event.preventDefault();
+  const payment = document.getElementById('payment-method').value;
+  const change = document.getElementById('cash-change').value;
+  let paymentDetails = '';
+
+  if (payment === 'pix') paymentDetails = 'Pix: 558999195466. Vou enviar o comprovante nesta conversa.';
+  if (payment === 'cartao') paymentDetails = 'Cartão. Favor confirmar a cobrança pelo WhatsApp.';
+  if (payment === 'dinheiro') paymentDetails = `Dinheiro. Troco para: ${change}`;
+
+  const name = document.getElementById('customer-name').value.trim();
+  const address = document.getElementById('customer-address').value.trim();
+  const url = formatWhatsAppMessage(cart, name, address, WHATSAPP_NUMBER, paymentDetails);
+  closeOrderModal();
+  window.open(url, '_blank');
+};
+
 document.querySelectorAll('.category-btn').forEach(btn => {
   btn.onclick = (e) => {
     document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
@@ -106,12 +148,7 @@ document.querySelectorAll('.category-btn').forEach(btn => {
 
 document.getElementById('cart-btn').onclick = () => {
   if (Object.keys(cart).length === 0) return;
-  const name = prompt("Digite seu nome:");
-  if (!name) return;
-  const address = prompt("Digite seu endereço completo em Balsas - MA (rua, número e bairro):");
-  if (!address) return;
-  const url = formatWhatsAppMessage(cart, name, address, WHATSAPP_NUMBER);
-  window.open(url, '_blank');
+  openOrderModal();
 };
 
 renderMenu();

@@ -110,6 +110,30 @@
     </button>
   </div>
 
+  <div class="order-modal" id="order-modal" hidden>
+    <div class="order-modal-backdrop" data-close-order></div>
+    <section class="order-dialog" role="dialog" aria-modal="true" aria-labelledby="order-title">
+      <button class="modal-close" type="button" data-close-order aria-label="Fechar">&times;</button>
+      <span class="hashtag">FINALIZE SEU PEDIDO</span>
+      <h2 id="order-title">Dados para entrega</h2>
+      <p class="order-summary" id="order-summary"></p>
+      <form id="order-form">
+        <label class="order-field">Seu nome<input id="customer-name" type="text" autocomplete="name" required /></label>
+        <label class="order-field">Endereço em Balsas - MA<input id="customer-address" type="text" placeholder="Rua, número e bairro" autocomplete="street-address" required /></label>
+        <label class="order-field">Forma de pagamento<select id="payment-method" required>
+          <option value="">Selecione uma opção</option>
+          <option value="pix">Pix</option>
+          <option value="cartao">Cartão</option>
+          <option value="dinheiro">Dinheiro</option>
+        </select></label>
+        <div class="payment-note" id="pix-note" hidden><strong>Pix: 558999195466</strong><span>Envie o comprovante nesta conversa depois do pagamento.</span></div>
+        <div class="payment-note" id="card-note" hidden>Ao escolher cartão, confirme a forma de pagamento pelo WhatsApp.</div>
+        <label class="order-field" id="cash-change-field" hidden>Vai precisar de troco para quanto?<input id="cash-change" type="text" inputmode="decimal" placeholder="Ex.: R$ 50,00" /></label>
+        <button class="submit-order" type="submit">Enviar pedido pelo WhatsApp</button>
+      </form>
+    </section>
+  </div>
+
   <script type="module" src="assets/js/client.js"></script>
 </body>
 </html>
