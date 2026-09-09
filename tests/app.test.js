@@ -48,6 +48,12 @@ describe('Suíte de Testes Automatizados - Marmitaria', () => {
 
     const pixUrl = formatWhatsAppMessage(cart, 'Teresa', 'Rua Central', '558999195466', 'Pix: 558999195466. Vou enviar o comprovante nesta conversa.');
     expect(decodeURIComponent(pixUrl.split('?text=')[1])).toContain('comprovante nesta conversa');
+
+    const cardUrl = formatWhatsAppMessage(cart, 'Teresa', 'Rua Central', '558999195466', 'Cartão. Favor confirmar a cobrança pelo WhatsApp.');
+    expect(decodeURIComponent(cardUrl.split('?text=')[1])).toContain('confirmar a cobrança pelo WhatsApp');
+
+    const cashUrl = formatWhatsAppMessage(cart, 'Teresa', 'Rua Central', '558999195466', 'Dinheiro. Troco para: R$ 50,00');
+    expect(decodeURIComponent(cashUrl.split('?text=')[1])).toContain('Troco para: R$ 50,00');
   });
 
   test('Deve manter os links públicos essenciais no site', () => {
@@ -56,7 +62,7 @@ describe('Suíte de Testes Automatizados - Marmitaria', () => {
     expect(html).toContain('https://wa.me/558999195466');
     expect(html).not.toContain('santwrl.github.io/SantWRL');
     expect(html).toContain('Pedir pelo WhatsApp');
-    expect(html).toContain('assets/img/logo.svg');
+    expect(html).toContain('assets/img/logo-jb-marmitas.jpeg');
     expect(html).toContain('property="og:title"');
     expect(html).toContain('name="theme-color" content="#121212"');
     expect(html).toContain('Pedir agora');
