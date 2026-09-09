@@ -1,17 +1,23 @@
-import { getEffectivePrice, formatPrice } from './db.js';
+import { formatPrice } from './format.js';
+
+const PHONE = '558999195466';
 
 export function calculateTotal(cart) {
-  return Object.values(cart).reduce((total, item) => total + (item.price * item.qty), 0);
+  return Object.values(cart).reduce((total, item) => total + item.price * item.qty, 0);
+}
+
+export function cartQuantity(cart) {
+  return Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
 }
 
 export function addItem(cart, product) {
-  if (product.outOfStock) return cart;
-  
+  if (product.out_of_stock) return cart;
+
   const updatedCart = { ...cart };
-  const price = getEffectivePrice(product);
+  const price = Number(product.promo_price > 0 ? product.promo_price : product.price);
 
   if (!updatedCart[product.id]) {
-    updatedCart[product.id] = { name: product.name, price, qty: 0 };
+    updatedCart[product.id] = { id: product.id, name: product.name, price, qty: 0 };
   }
 
   updatedCart[product.id].qty += 1;
@@ -31,8 +37,17 @@ export function removeItem(cart, productId) {
   return updatedCart;
 }
 
-export function formatWhatsAppMessage(cart, clientName, clientAddress, phone, paymentDetails = '', reference = '', cutlery = '') {
-  let message = "*NOVO PEDIDO DE MARMITA*\n\n";
+export function formatWhatsAppMessage(
+  cart,
+  clientName,
+  clientAddress,
+  phone,
+  paymentDetails = '',
+  reference = '',
+  cutlery = '',
+  deliveryType = ''
+) {
+  let message = '*NOVO PEDIDO DE MARMITA*\n\n';
   const total = calculateTotal(cart);
 
   for (const id in cart) {
@@ -42,10 +57,18 @@ export function formatWhatsAppMessage(cart, clientName, clientAddress, phone, pa
 
   message += `\n*TOTAL:* ${formatPrice(total)}`;
   if (clientName) message += `\n\n*Cliente:* ${clientName}`;
-  if (clientAddress) message += `\n*Endereço:* ${clientAddress}`;
-  if (reference) message += `\n*Ponto de referência:* ${reference}`;
+
+  if (deliveryType === 'retirada') {
+    message += `\n*Entrega:* Retirada no local`;
+  } else {
+    if (clientAddress) message += `\n*Endereço:* ${clientAddress}`;
+    if (reference) message += `\n*Ponto de referência:* ${reference}`;
+  }
+
   if (cutlery) message += `\n*Talher:* ${cutlery}`;
   if (paymentDetails) message += `\n\n*Pagamento:* ${paymentDetails}`;
 
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }
+
+export { PHONE };

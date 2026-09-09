@@ -1,16 +1,61 @@
 # JB Marmitas
 
-Cardápio estático de delivery, com carrinho e envio do pedido pelo WhatsApp.
+Cardápio digital para marmitaria com pedidos pelo WhatsApp, painel administrativo
+secreto e dados (cardápio, pedidos e fotos) guardados no Supabase.
+
+## Como funciona
+
+- **Site público** (`index.html`): cardápio vem da tabela `products` do Supabase e
+  atualiza sozinho quando o admin muda algo (realtime). O pedido é salvo na tabela
+  `orders` **e** enviado pelo WhatsApp.
+- **Painel admin** (`painel-jb-2026.html`): URL secreta, fora dos menus do site e
+  com `noindex`. O acesso exige login Supabase (email/senha); ninguém vê ou usa o
+  painel sem estar autenticado.
+- **Fotos dos produtos**: enviadas para o bucket `produtos` do Supabase Storage.
+
+## Configuração do Supabase (uma vez só)
+
+1. Abra o **SQL Editor** no painel do Supabase.
+2. Cole todo o conteúdo de `supabase/schema.sql` e execute (**Run**).
+   Isso cria as tabelas `products` e `orders`, as políticas de segurança (RLS),
+   o bucket de fotos `produtos` e os itens iniciais do cardápio.
+3. Crie o usuário do administrador em **Authentication > Users > Add user**:
+   - Email: o email que você quer usar no painel
+   - Senha: a senha do painel
+   - Marque **Auto Confirm User** para já ficar ativo.
+4. (Recomendado) Em **Authentication > Providers > Email**, ative
+   **Confirm email** apenas se quiser exigir confirmação de email de clientes.
 
 ## Desenvolvimento
 
 ```bash
 npm install
-npm test
+cp .env.example .env   # preencha com a URL e a publishable key do projeto
+npm run dev
 ```
 
-Para testar no navegador, abra `index.html` ou sirva a pasta com um servidor estático.
+- `npm test` roda os testes (Jest).
+- `npm run build` gera o site em `dist/`.
 
-## GitHub Pages
+## Deploy no GitHub Pages
 
-O site não precisa de build: publique a branch principal usando a pasta raiz (`Settings > Pages > Deploy from a branch`). A página inicial é `index.html`.
+O deploy é automático: a cada push na branch `main`, o workflow
+`.github/workflows/deploy.yml` compila o site e publica no Pages.
+
+Uma única configuração é necessária no repositório:
+
+1. **Settings > Secrets and variables > Actions > New repository secret**:
+   - `VITE_SUPABASE_URL` = `https://zxzwpkojyclyavbpikpo.supabase.co`
+   - `VITE_SUPABASE_PUBLISHABLE_KEY` = sua publishable key
+2. **Settings > Pages > Source**: escolha **GitHub Actions**.
+
+O site fica em `https://SEU-USUARIO.github.io/SEU-REPOSITORIO/` e o painel em
+`.../painel-jb-2026.html` (guarde esse endereço — não há link no site).
+
+## Segurança
+
+- A senha do admin não fica mais no código: o login é feito pelo Supabase Auth.
+- O site público nunca exibe link do painel; a URL secreta + `noindex` dificultam
+  a descoberta.
+- As políticas RLS garantem que visitantes anônimos só conseguem **ler** o
+  cardápio e **criar** pedidos — todas as outras operações exigem login.

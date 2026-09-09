@@ -1,33 +1,38 @@
-import { calculateTotal, addItem, removeItem, formatWhatsAppMessage } from '../assets/js/cart.js';
-import { formatPrice, getEffectivePrice } from '../assets/js/db.js';
-import { readFileSync } from 'node:fs';
+import { calculateTotal, addItem, removeItem, cartQuantity, formatWhatsAppMessage, PHONE } from '../src/lib/cart.js';
+import { formatPrice, getEffectivePrice } from '../src/lib/format.js';
+import { readFileSync, existsSync } from 'node:fs';
 
-describe('Suíte de Testes Automatizados - Marmitaria', () => {
+const product = overrides => ({
+  id: '1',
+  name: 'Marmita Comercial',
+  price: 22,
+  promo_price: null,
+  out_of_stock: false,
+  ...overrides
+});
 
+describe('Carrinho', () => {
   test('Deve calcular o valor total do carrinho corretamente', () => {
     const cart = {
-      '1': { price: 22.00, qty: 2 },
-      '2': { price: 15.00, qty: 1 }
+      '1': { price: 22.0, qty: 2 },
+      '2': { price: 15.0, qty: 1 }
     };
-    expect(calculateTotal(cart)).toBe(59.00);
+    expect(calculateTotal(cart)).toBe(59.0);
+  });
+
+  test('Deve contar a quantidade total de itens', () => {
+    const cart = { '1': { price: 22, qty: 3 }, '2': { price: 7, qty: 1 } };
+    expect(cartQuantity(cart)).toBe(4);
   });
 
   test('Deve aplicar o preço promocional quando disponível', () => {
-    const product = { id: '1', price: 20.00, promoPrice: 15.00 };
-    expect(getEffectivePrice(product)).toBe(15.00);
+    expect(getEffectivePrice(product({ promo_price: 15 }))).toBe(15);
+    expect(getEffectivePrice(product({ promo_price: null }))).toBe(22);
   });
 
   test('Não deve adicionar item ao carrinho se estiver esgotado', () => {
-    const product = { id: '3', outOfStock: true, price: 10.00 };
-    const cart = {};
-    const updatedCart = addItem(cart, product);
-    expect(updatedCart['3']).toBeUndefined();
-  });
-
-  test('Deve formatar o preço em BRL corretamente', () => {
-    const formatted = formatPrice(19.90);
-    expect(formatted.replace(/\s/g, ' ')).toContain('R$');
-    expect(formatted).toContain('19,90');
+    const cart = addItem({}, product({ id: '3', out_of_stock: true, price: 10 }));
+    expect(cart['3']).toBeUndefined();
   });
 
   test('Deve remover item do carrinho se a quantidade chegar a 0', () => {
@@ -36,48 +41,76 @@ describe('Suíte de Testes Automatizados - Marmitaria', () => {
     expect(cart['1']).toBeUndefined();
   });
 
+  test('addItem deve usar o preço promocional no carrinho', () => {
+    const cart = addItem({}, product({ price: 22, promo_price: 18 }));
+    expect(cart['1'].price).toBe(18);
+  });
+
+  test('Deve formatar o preço em BRL corretamente', () => {
+    const formatted = formatPrice(19.9);
+    expect(formatted).toContain('R$');
+    expect(formatted).toContain('19,90');
+  });
+});
+
+describe('Mensagem de WhatsApp', () => {
   test('Deve gerar um pedido WhatsApp com o número e dados do cliente', () => {
     const cart = { '1': { name: 'Marmita', price: 20, qty: 1 } };
-    const url = formatWhatsAppMessage(cart, 'Teresa', 'Rua Central', '558999195466');
+    const url = formatWhatsAppMessage(cart, 'Teresa', 'Rua Central', PHONE);
     const message = decodeURIComponent(url.split('?text=')[1]);
 
-    expect(url).toContain('https://wa.me/558999195466?text=');
+    expect(url).toContain(`https://wa.me/${PHONE}?text=`);
     expect(message).toContain('*Cliente:* Teresa');
     expect(message).toContain('*Endereço:* Rua Central');
-    expect(message).not.toContain('*PAGAMENTO VIA PIX:*');
-
-    const pixUrl = formatWhatsAppMessage(cart, 'Teresa', 'Rua Central', '558999195466', 'Pix: 558999195466. Vou enviar o comprovante nesta conversa.');
-    expect(decodeURIComponent(pixUrl.split('?text=')[1])).toContain('comprovante nesta conversa');
-
-    const cardUrl = formatWhatsAppMessage(cart, 'Teresa', 'Rua Central', '558999195466', 'Cartão. Favor confirmar a cobrança pelo WhatsApp.');
-    expect(decodeURIComponent(cardUrl.split('?text=')[1])).toContain('confirmar a cobrança pelo WhatsApp');
-
-    const cashUrl = formatWhatsAppMessage(cart, 'Teresa', 'Rua Central', '558999195466', 'Dinheiro. Troco para: R$ 50,00');
-    expect(decodeURIComponent(cashUrl.split('?text=')[1])).toContain('Troco para: R$ 50,00');
-
-    const deliveryUrl = formatWhatsAppMessage(cart, 'Teresa', 'Rua Central', '558999195466', '', 'Próximo à praça', 'Sim');
-    const deliveryMessage = decodeURIComponent(deliveryUrl.split('?text=')[1]);
-    expect(deliveryMessage).toContain('*Ponto de referência:* Próximo à praça');
-    expect(deliveryMessage).toContain('*Talher:* Sim');
   });
 
-  test('Deve manter os links públicos essenciais no site', () => {
+  test('Deve mostrar retirada no local e omitir endereço', () => {
+    const cart = { '1': { name: 'Marmita', price: 20, qty: 1 } };
+    const url = formatWhatsAppMessage(cart, 'Teresa', '', PHONE, '', '', 'Sim', 'retirada');
+    const message = decodeURIComponent(url.split('?text=')[1]);
+
+    expect(message).toContain('*Entrega:* Retirada no local');
+    expect(message).not.toContain('*Endereço:*');
+  });
+
+  test('Deve incluir pagamento, referência e talher', () => {
+    const cart = { '1': { name: 'Marmita', price: 20, qty: 1 } };
+    const url = formatWhatsAppMessage(cart, 'Teresa', 'Rua Central', PHONE, 'Pix: 558999195466', 'Próximo à praça', 'Sim', 'entrega');
+    const message = decodeURIComponent(url.split('?text=')[1]);
+
+    expect(message).toContain('*Pagamento:* Pix: 558999195466');
+    expect(message).toContain('*Ponto de referência:* Próximo à praça');
+    expect(message).toContain('*Talher:* Sim');
+  });
+});
+
+describe('Páginas', () => {
+  test('index.html monta o app React e não expõe o painel admin', () => {
     const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
-    expect(html).toContain('https://wa.me/558999195466');
-    expect(html).not.toContain('santwrl.github.io/SantWRL');
-    expect(html).toContain('Pedir pelo WhatsApp');
-    expect(html).toContain('assets/img/logo-jb-marmitas.jpeg');
+    expect(html).toContain('/src/main.jsx');
+    expect(html).not.toContain('adm.html');
+    expect(html).not.toContain('painel');
     expect(html).toContain('property="og:title"');
-    expect(html).toContain('name="theme-color" content="#121212"');
-    expect(html).toContain('Pedir agora');
-    expect(html).toContain('Ver cardápio');
-    expect(html).toContain('id="order-form"');
-    expect(html).toContain('Endereço em Balsas - MA');
-    expect(html).toContain('Ponto de referência');
-    expect(html).toContain('Vai querer talher?');
-    expect(html).toContain('Pix: 558999195466');
-    expect(html).toContain('Vai precisar de troco para quanto?');
+
+    const appSource = readFileSync(new URL('../src/lib/cart.js', import.meta.url), 'utf8');
+    expect(appSource).toContain("'558999195466'");
   });
 
+  test('painel admin existe, é secreto e protegido contra indexação', () => {
+    expect(existsSync(new URL('../painel-jb-2026.html', import.meta.url))).toBe(true);
+
+    const html = readFileSync(new URL('../painel-jb-2026.html', import.meta.url), 'utf8');
+    expect(html).toContain('/src/admin-main.jsx');
+    expect(html).toContain('noindex, nofollow');
+  });
+
+  test('schema do Supabase existe com tabelas e políticas', () => {
+    const sql = readFileSync(new URL('../supabase/schema.sql', import.meta.url), 'utf8');
+
+    expect(sql).toContain('create table if not exists public.products');
+    expect(sql).toContain('create table if not exists public.orders');
+    expect(sql).toContain('enable row level security');
+    expect(sql).toContain("bucket_id = 'produtos'");
+  });
 });

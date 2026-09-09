@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" role="img" aria-labelledby="title">
+  <title id="title">Marmita JB</title>
+  <rect width="300" height="300" fill="#171717"/>
+  <rect x="35" y="105" width="230" height="105" rx="20" fill="#f8f1e8"/>
+  <path d="M35 130h230M65 105l15 105m155-105-15 105" fill="none" stroke="#f79300" stroke-width="10"/>
+  <text x="150" y="175" text-anchor="middle" font-family="Georgia, serif" font-size="62" font-weight="bold" fill="#f79300">JB</text>
+  <path d="M100 78c0-20 18-20 18-40m32 40c0-20 18-20 18-40" fill="none" stroke="#f79300" stroke-width="8" stroke-linecap="round"/>
+</svg>
