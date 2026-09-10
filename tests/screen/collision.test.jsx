@@ -124,7 +124,7 @@ describe('Isolamento entre telas', () => {
     first.unmount();
 
     const second = render(<AdminLogin onSignedIn={() => {}} />);
-    expect(screen.queryByText('A MARMITA MAIS RECHEADA DA REGIÃO')).not.toBeInTheDocument();
+    expect(screen.queryByText('A marmita mais recheada da região')).not.toBeInTheDocument();
     expect(screen.getByText('Acesso restrito')).toBeInTheDocument();
     second.unmount();
   });

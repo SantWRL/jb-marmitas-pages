@@ -113,4 +113,34 @@ describe('Páginas', () => {
     expect(sql).toContain('enable row level security');
     expect(sql).toContain("bucket_id = 'produtos'");
   });
+
+  test('Anon não pode atualizar nem apagar pedidos (RLS)', () => {
+    const sql = readFileSync(new URL('../supabase/schema.sql', import.meta.url), 'utf8');
+
+    expect(sql).not.toMatch(/for\s+update[\s\S]{0,80}to\s+anon/i);
+    expect(sql).not.toMatch(/for\s+delete[\s\S]{0,80}to\s+anon/i);
+    expect(sql).not.toMatch(/for\s+all[\s\S]{0,80}to\s+anon/i);
+    expect(sql).not.toMatch(/for\s+update[\s\S]{0,80}to\s+public/i);
+    expect(sql).not.toMatch(/for\s+delete[\s\S]{0,80}to\s+public/i);
+    expect(sql).not.toMatch(/for\s+all[\s\S]{0,80}to\s+public/i);
+  });
+
+  test('Chaves secretas Supabase não vazam no código versionado', () => {
+    for (const rel of ['/src/lib/supabase.js', '/src/lib/api.js']) {
+      const source = readFileSync(new URL(`../src${rel.slice(4)}`, import.meta.url), 'utf8');
+      expect(source).not.toMatch(/service_role|SUPABASE_SECRE?T|PRIVATE[_-]KEY/);
+    }
+    expect(readFileSync(new URL('../.env.example', import.meta.url), 'utf8')).not.toMatch(/ey[A-Za-z0-9_-]{20,}/);
+    expect(readFileSync(new URL('../.gitignore', import.meta.url), 'utf8')).toContain('.env');
+  });
+
+  test('Biblioteca root/assets/js não usa innerHTML nem eval (XSS)', () => {
+    const read = rel => readFileSync(new URL(rel, import.meta.url), 'utf8');
+    for (const rel of ['../../assets/js/client.js', '../../assets/js/db.js', '../../assets/js/bd.js', '../../assets/js/cart.js']) {
+      const source = read(rel);
+      expect(source).not.toMatch(/\beval\s*\(/);
+      expect(source).not.toMatch(/innerHTML\s*=/);
+      expect(source).not.toMatch(/document\.write\s*\(/);
+    }
+  });
 });

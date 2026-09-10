@@ -1,12 +1,12 @@
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import svgr from 'vite-plugin-svgr';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
-// base: './' makes the build work both on GitHub Pages project sites
-// (username.github.io/repo/) and locally, without hardcoding the repo name.
 export default defineConfig({
   base: './',
-  plugins: [react()],
+  plugins: [react(), svgr(), tsconfigPaths()],
   build: {
     rollupOptions: {
       input: {

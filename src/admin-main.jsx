@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import '../assets/css/style.css';
+import './styles/global.css';
 import {
   fetchProducts,
   createProduct,
@@ -22,6 +22,13 @@ import { ConfigErrorScreen } from './lib/ConfigErrorScreen.jsx';
 
 const PLACEHOLDER = 'assets/img/marmita-placeholder.svg';
 const STATUS_OPTIONS = ['novo', 'aceito', 'entregue', 'cancelado'];
+const CATEGORIES = [
+  ['pratos', 'Pratos'],
+  ['porcoes', 'Porções'],
+  ['bebidas', 'Bebidas'],
+  ['sobremesas', 'Sobremesas'],
+  ['combos', 'Combos']
+];
 const STATUS_LABELS = { novo: 'Novo', aceito: 'Aceito', entregue: 'Entregue', cancelado: 'Cancelado' };
 
 /* ---------------- Login ---------------- */
@@ -88,6 +95,7 @@ export function NewProductForm({ onCreated }) {
         description: String(data.get('description') || '').trim(),
         category: data.get('category'),
         price: Number(data.get('price')),
+        best_seller: data.get('best_seller') === 'on',
         image_url: imageUrl || PLACEHOLDER
       });
       form.reset();
@@ -110,9 +118,14 @@ export function NewProductForm({ onCreated }) {
         <div className="form-group">
           <label htmlFor="new-category">Categoria:</label>
           <select id="new-category" name="category">
-            <option value="pratos">Pratos do Dia</option>
-            <option value="bebidas">Bebidas</option>
+            {CATEGORIES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
+        </div>
+        <div className="form-group form-check">
+          <label>
+            <input type="checkbox" name="best_seller" />
+            Marcar como Mais Pedido (destaque no cardápio)
+          </label>
         </div>
         <div className="form-group"><label htmlFor="new-desc">Descrição:</label><textarea id="new-desc" name="description" rows="2" placeholder="Ex: Arroz, feijão, purê e salada..." required /></div>
         <div className="form-group"><label htmlFor="new-price">Preço (R$):</label><input id="new-price" name="price" type="number" min="0.01" step="0.01" placeholder="20.00" required /></div>
@@ -191,6 +204,15 @@ export function ProductCard({ product, onChanged }) {
                 if (promo !== product.promo_price) change({ promo_price: promo });
               }}
             />
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={Boolean(product.best_seller)}
+              disabled={busy}
+              onChange={event => change({ best_seller: event.target.checked })}
+            />
+            Marcar como Mais Pedido
           </label>
           <button className="btn-delete" onClick={remove} disabled={busy}>🗑️ Excluir Item</button>
         </div>
@@ -349,9 +371,16 @@ export function AdminApp() {
         ) : (
           <>
             <NewProductForm onCreated={loadAll} />
-            <nav className="categories-bar">
-              <button className={`category-btn ${category === 'pratos' ? 'active' : ''}`} onClick={() => setCategory('pratos')}>Gerenciar Pratos</button>
-              <button className={`category-btn ${category === 'bebidas' ? 'active' : ''}`} onClick={() => setCategory('bebidas')}>Gerenciar Bebidas</button>
+            <nav className="categories-bar admin-categories">
+              {CATEGORIES.map(([value, label]) => (
+                <button
+                  key={value}
+                  className={`category-btn ${category === value ? 'active' : ''}`}
+                  onClick={() => setCategory(value)}
+                >
+                  {label}
+                </button>
+              ))}
             </nav>
             <div id="admin-menu-container">
               {visible.map(product => <ProductCard key={product.id} product={product} onChanged={loadAll} />)}

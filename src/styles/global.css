@@ -1,0 +1,115 @@
+/* Fontes carregadas via <link> no index.html/painel (mais rápido do que
+   @import, que bloqueia a renderização em cadeia). */
+/* Folha de estilo da loja (classes usadas pelo site e pelo painel) */
+@import '../../assets/css/style.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fonte padrão do site */
+body {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Classes de fonte personalizadas */
+.font-italiana {
+  font-family: 'Italiana', serif;
+}
+
+.font-josefinSans {
+  font-family: 'Josefin Sans', sans-serif;
+}
+
+.font-montserrat {
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Scroll suave */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Tema claro do layout Aluroni: o storefront CSS escuro continua carregado
+   (modais, carrinho e painel usam suas classes), mas o fundo do site segue
+   o claro do design de referência. */
+body.storefront {
+  background: #f6f6f6;
+  color: #242536;
+}
+
+/* Barra superior da loja */
+.storefront-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 28px;
+  background: #171717;
+  border-bottom: 1px solid #333;
+}
+
+.storefront-topbar strong {
+  font-family: 'Italiana', serif;
+  font-size: 1.6rem;
+  color: #fff;
+}
+
+.storefront-topbar .top-actions {
+  margin-top: 0;
+  align-items: center;
+}
+
+.auth-button {
+  padding: 9px 14px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: transparent;
+  color: #ddd;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.auth-button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.hero-button {
+  cursor: pointer;
+}
+
+/* Selo de categoria nos cards */
+.badge-categoria {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 3px;
+  background: var(--accent);
+  color: #111;
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Rodapé da loja */
+.storefront-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 34px 28px;
+  background: #171717;
+  border-top: 1px solid #333;
+  color: #fff;
+}
+
+.storefront-footer p {
+  margin-top: 4px;
+  color: #aaa;
+  font-size: 0.8rem;
+}

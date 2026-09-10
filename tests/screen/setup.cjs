@@ -19,6 +19,7 @@ export const sampleProducts = [
     price: 22,
     promo_price: null,
     out_of_stock: false,
+    best_seller: true,
     image_url: 'assets/img/marmita-placeholder.svg'
   },
   {
@@ -29,6 +30,7 @@ export const sampleProducts = [
     price: 19.9,
     promo_price: 16.9,
     out_of_stock: false,
+    best_seller: false,
     image_url: 'assets/img/marmita-placeholder.svg'
   },
   {
@@ -39,6 +41,7 @@ export const sampleProducts = [
     price: 7,
     promo_price: null,
     out_of_stock: true,
+    best_seller: false,
     image_url: 'assets/img/marmita-placeholder.svg'
   }
 ];

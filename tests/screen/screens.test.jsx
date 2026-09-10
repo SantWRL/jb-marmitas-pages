@@ -89,6 +89,44 @@ describe('Tela: Site público (cardápio)', () => {
     expect(screen.getByText('Dados para entrega')).toBeInTheDocument();
   });
 
+  test('busca filtra pelos itens de todas as categorias', async () => {
+    render(<App />);
+    await waitFor(() => expect(screen.getByText('Marmita Comercial de Bife')).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText('Buscar no cardápio'), { target: { value: 'bife' } });
+    expect(screen.getByText('Marmita Comercial de Bife')).toBeInTheDocument();
+    expect(screen.queryByText('Suco de Laranja 500ml')).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Buscar no cardápio'), { target: { value: 'inexistente' } });
+    expect(screen.getByText('Nada encontrado para essa busca.')).toBeInTheDocument();
+  });
+
+  test('ordenar por menor preço usa o preço promocional', async () => {
+    render(<App />);
+    await waitFor(() => expect(screen.getByText('Marmita Comercial de Bife')).toBeInTheDocument());
+
+    fireEvent.keyDown(screen.getByLabelText('Ordenar cardápio'), { key: 'ArrowDown' });
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Menor preço' }));
+    await waitFor(() => {
+      const titles = screen.getAllByRole('heading', { level: 3 });
+      expect(titles[0]).toHaveTextContent('Marmita Fit de Frango');
+    });
+  }, 30000);
+
+  test('foto abre o modal de detalhes e adiciona ao carrinho', async () => {
+    render(<App />);
+    await waitFor(() => expect(screen.getByText('Marmita Comercial de Bife')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ver detalhes de Marmita Comercial de Bife' }));
+    expect(screen.getByRole('dialog', { name: 'Marmita Comercial de Bife' })).toBeInTheDocument();
+    // o selo aparece no card (fundo) e dentro do modal
+    expect(screen.getAllByText('MAIS PEDIDO').length).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getByRole('button', { name: /Adicionar/ }));
+    expect(screen.getByText('1 item')).toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Marmita Comercial de Bife' })).not.toBeInTheDocument();
+  });
+
   test('abre o modal de login do cliente', async () => {
     render(<App />);
     await waitFor(() =>
