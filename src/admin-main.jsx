@@ -17,6 +17,8 @@ import {
   subscribeToProducts
 } from './lib/api.js';
 import { formatPrice } from './lib/format.js';
+import { supabaseConfigError } from './lib/supabase.js';
+import { ConfigErrorScreen } from './lib/ConfigErrorScreen.jsx';
 
 const PLACEHOLDER = 'assets/img/marmita-placeholder.svg';
 const STATUS_OPTIONS = ['novo', 'aceito', 'entregue', 'cancelado'];
@@ -298,6 +300,10 @@ export function AdminApp() {
     const unsubProducts = subscribeToProducts(loadAll);
     return () => { unsubOrders(); unsubProducts(); };
   }, [session]);
+
+  if (supabaseConfigError) {
+    return <ConfigErrorScreen />;
+  }
 
   if (checking) {
     return <main className="container"><p style={{ padding: 40, textAlign: 'center' }}>Carregando...</p></main>;

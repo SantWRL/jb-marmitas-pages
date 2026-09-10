@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import '../assets/css/style.css';
-import { supabase } from './lib/supabase.js';
+import { supabase, supabaseConfigError } from './lib/supabase.js';
+import { ConfigErrorScreen } from './lib/ConfigErrorScreen.jsx';
 import { fetchProducts, createOrder, getSession, subscribeToProducts } from './lib/api.js';
 import {
   calculateTotal,
@@ -388,5 +389,5 @@ export function App() {
 // Monta a página apenas quando rodando no site (não em testes).
 const rootNode = typeof document !== 'undefined' && document.getElementById('root');
 if (rootNode) {
-  createRoot(rootNode).render(<App />);
+  createRoot(rootNode).render(supabaseConfigError ? <ConfigErrorScreen /> : <App />);
 }
