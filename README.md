@@ -39,21 +39,26 @@ npm run dev
 - `npm run build` gera o site em `dist/` (exige as variáveis do Supabase no
   `.env` ou no ambiente).
 
-## Deploy no GitHub Pages
+## Deploy na Vercel
 
-O deploy é automático: a cada push na branch `main`, o workflow
-`.github/workflows/deploy.yml` roda os testes, compila o site e publica no
-Pages.
-
-Uma única configuração é necessária no repositório:
-
-1. **Settings > Secrets and variables > Actions > New repository secret**:
-   - `VITE_SUPABASE_URL` = `https://zxzwpkojyclyavbpikpo.supabase.co`
-   - `VITE_SUPABASE_PUBLISHABLE_KEY` = sua publishable key
-2. **Settings > Pages > Source**: escolha **GitHub Actions**.
-
-O site fica em `https://SEU-USUARIO.github.io/SEU-REPOSITORIO/` e o painel em
+O site público fica em `https://jb-marmitas-pages.vercel.app/` e o painel em
 `.../painel-jb-2026.html` (guarde esse endereço — não há link no site).
+
+A cada push na branch `main`, a Vercel compila e publica sozinha. Configuração
+feita uma vez só no projeto:
+
+1. **Root Directory** = `jb-marmitas-pages` (o app não está na raiz do repo).
+2. **Environment Variables**:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+O arquivo `vercel.json` mantém o rewrite de SPA (qualquer rota cai no
+`index.html`, exceto `/assets/*` e o painel) e cache imutável dos assets.
+
+O GitHub Pages **não** é mais usado: o workflow `.github/workflows/ci.yml`
+roda apenas testes e build (CI). Se o Pages ainda estiver ativo no GitHub,
+desligue em **Settings > Pages > Source: None** para o site só existir na
+Vercel.
 
 ## Segurança
 

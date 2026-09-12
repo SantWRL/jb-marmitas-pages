@@ -1,17 +1,17 @@
-name: Deploy to GitHub Pages
+name: CI
 
 on:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: ci
   cancel-in-progress: true
 
 jobs:
@@ -27,7 +27,7 @@ jobs:
 
       - run: npm ci
 
-      # Antes de publicar, garante que a suíte inteira passa (TDD na esteira).
+      # Garante que a suíte inteira passa a cada push/PR (TDD na esteira).
       - name: Test
         run: npm test
 
@@ -36,17 +36,3 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
