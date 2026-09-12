@@ -18,8 +18,8 @@ export function ConfigErrorScreen({ message = supabaseConfigError }) {
         </p>
         <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
           Responsável pelo site: defina <code>VITE_SUPABASE_URL</code> e{' '}
-          <code>VITE_SUPABASE_PUBLISHABLE_KEY</code> nas variáveis de ambiente do
-          deploy (Vercel → Settings → Environment Variables) e faça um novo deploy.
+          <code>VITE_SUPABASE_PUBLISHABLE_KEY</code> nos secrets do GitHub
+          (Settings → Secrets and variables → Actions) e rode o deploy novamente.
         </p>
       </section>
     </main>

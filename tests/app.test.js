@@ -56,17 +56,17 @@ describe('Carrinho', () => {
 describe('Mensagem de WhatsApp', () => {
   test('Deve gerar um pedido WhatsApp com o número e dados do cliente', () => {
     const cart = { '1': { name: 'Marmita', price: 20, qty: 1 } };
-    const url = formatWhatsAppMessage(cart, 'Teresa', 'Rua Central', PHONE);
+    const url = formatWhatsAppMessage(cart, 'JB', 'Rua Central', PHONE);
     const message = decodeURIComponent(url.split('?text=')[1]);
 
     expect(url).toContain(`https://wa.me/${PHONE}?text=`);
-    expect(message).toContain('*Cliente:* Teresa');
+    expect(message).toContain('*Cliente:* JB');
     expect(message).toContain('*Endereço:* Rua Central');
   });
 
   test('Deve mostrar retirada no local e omitir endereço', () => {
     const cart = { '1': { name: 'Marmita', price: 20, qty: 1 } };
-    const url = formatWhatsAppMessage(cart, 'Teresa', '', PHONE, '', '', 'Sim', 'retirada');
+    const url = formatWhatsAppMessage(cart, 'JB', '', PHONE, '', '', 'Sim', 'retirada');
     const message = decodeURIComponent(url.split('?text=')[1]);
 
     expect(message).toContain('*Entrega:* Retirada no local');
@@ -75,10 +75,10 @@ describe('Mensagem de WhatsApp', () => {
 
   test('Deve incluir pagamento, referência e talher', () => {
     const cart = { '1': { name: 'Marmita', price: 20, qty: 1 } };
-    const url = formatWhatsAppMessage(cart, 'Teresa', 'Rua Central', PHONE, 'Pix: 558999195466', 'Próximo à praça', 'Sim', 'entrega');
+    const url = formatWhatsAppMessage(cart, 'JB', 'Rua Central', PHONE, 'Pix: 5599999042932', 'Próximo à praça', 'Sim', 'entrega');
     const message = decodeURIComponent(url.split('?text=')[1]);
 
-    expect(message).toContain('*Pagamento:* Pix: 558999195466');
+    expect(message).toContain('*Pagamento:* Pix: 5599999042932');
     expect(message).toContain('*Ponto de referência:* Próximo à praça');
     expect(message).toContain('*Talher:* Sim');
   });
@@ -94,7 +94,7 @@ describe('Páginas', () => {
     expect(html).toContain('property="og:title"');
 
     const appSource = readFileSync(new URL('../src/lib/cart.js', import.meta.url), 'utf8');
-    expect(appSource).toContain("'558999195466'");
+    expect(appSource).toContain("'5599999042932'");
   });
 
   test('painel admin existe, é secreto e protegido contra indexação', () => {
@@ -134,10 +134,18 @@ describe('Páginas', () => {
     expect(readFileSync(new URL('../.gitignore', import.meta.url), 'utf8')).toContain('.env');
   });
 
-  test('Biblioteca root/assets/js não usa innerHTML nem eval (XSS)', () => {
-    const read = rel => readFileSync(new URL(rel, import.meta.url), 'utf8');
-    for (const rel of ['../../assets/js/client.js', '../../assets/js/db.js', '../../assets/js/bd.js', '../../assets/js/cart.js']) {
-      const source = read(rel);
+  test('Código do app não usa eval, innerHTML nem document.write (XSS)', () => {
+    const sources = [
+      '/src/main.jsx',
+      '/src/admin-main.jsx',
+      '/src/lib/cart.js',
+      '/src/lib/api.js',
+      '/src/components/OrderModal.jsx',
+      '/src/components/ItemModal.jsx',
+      '/src/components/CustomerAuth.jsx'
+    ];
+    for (const rel of sources) {
+      const source = readFileSync(new URL(`..${rel}`, import.meta.url), 'utf8');
       expect(source).not.toMatch(/\beval\s*\(/);
       expect(source).not.toMatch(/innerHTML\s*=/);
       expect(source).not.toMatch(/document\.write\s*\(/);

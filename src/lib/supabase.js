@@ -13,7 +13,7 @@ if (!supabaseUrl) missing.push('VITE_SUPABASE_URL');
 if (!publishableKey) missing.push('VITE_SUPABASE_PUBLISHABLE_KEY');
 
 export const supabaseConfigError = missing.length
-  ? `Supabase não configurado neste deploy: falta ${missing.join(' e ')}. Defina as variáveis de ambiente (Vercel → Settings → Environment Variables) e publique novamente.`
+  ? `Supabase não configurado neste deploy: falta ${missing.join(' e ')}. O responsável pelo site precisa definir as variáveis de ambiente (GitHub → Settings → Secrets and variables → Actions) e publicar novamente.`
   : '';
 
 // Quando não configurado, usa valores placeholder apenas para o bundle

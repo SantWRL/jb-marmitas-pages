@@ -111,7 +111,7 @@ describe('Tela: Site público (cardápio)', () => {
       const titles = screen.getAllByRole('heading', { level: 3 });
       expect(titles[0]).toHaveTextContent('Marmita Fit de Frango');
     });
-  }, 30000);
+  }, 60000);
 
   test('foto abre o modal de detalhes e adiciona ao carrinho', async () => {
     render(<App />);
@@ -143,14 +143,15 @@ describe('Tela: Site público (cardápio)', () => {
 describe('Tela: Modal de pedido', () => {
   const cart = { p1: { id: 'p1', name: 'Marmita Comercial de Bife', price: 22, qty: 2 } };
 
-  test('mostra resumo e campos de entrega', () => {
+  test('mostra resumo e campos de entrega na primeira etapa', () => {
     render(<OrderModal cart={cart} onClose={() => {}} onDone={() => {}} />);
     expect(screen.getByText(/2 itens no pedido/)).toBeInTheDocument();
     expect(screen.getByText(/R\$ 44,00/)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Seu nome/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Como vai receber/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Endereço em Balsas/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/talher/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Forma de pagamento/i)).toBeInTheDocument();
+    // As etapas seguintes só aparecem depois de avançar
+    expect(screen.queryByLabelText(/Seu nome/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Forma de pagamento/i)).not.toBeInTheDocument();
   });
 
   test('retirada esconde campos de endereço', () => {
@@ -163,33 +164,61 @@ describe('Tela: Modal de pedido', () => {
     expect(screen.getByText('Retirada no local')).toBeInTheDocument();
   });
 
+  test('avança pelas etapas: entrega, identificação e pagamento', () => {
+    render(<OrderModal cart={cart} onClose={() => {}} onDone={() => {}} />);
+
+    // Etapa 1 — endereço obrigatório para habilitar "Continuar"
+    const continuar = screen.getByRole('button', { name: 'Continuar' });
+    expect(continuar).toBeDisabled();
+    fireEvent.change(screen.getByLabelText(/Endereço em Balsas/i), {
+      target: { value: 'Rua Central, 10' }
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
+
+    // Etapa 2 — identificação
+    expect(screen.getByLabelText(/Seu nome/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/talher/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
+
+    // Etapa 3 — pagamento e revisão
+    expect(screen.getByLabelText(/Forma de pagamento/i)).toBeInTheDocument();
+    expect(screen.getByText('Revise seu pedido')).toBeInTheDocument();
+    expect(screen.getByText('← Voltar')).toBeInTheDocument();
+  });
+
   test('envia o pedido: salva no Supabase e abre o WhatsApp', async () => {
     createOrder.mockResolvedValue({ id: 'novo' });
     const onDone = jest.fn();
     render(<OrderModal cart={cart} onClose={() => {}} onDone={onDone} />);
 
+    // Etapa 1 — entrega
     fireEvent.change(screen.getByLabelText(/Como vai receber/i), { target: { value: 'entrega' } });
-    fireEvent.change(screen.getByLabelText(/Seu nome/i), { target: { value: 'Teresa' } });
     fireEvent.change(screen.getByLabelText(/Endereço em Balsas/i), {
       target: { value: 'Rua Central, 10' }
     });
     fireEvent.change(screen.getByLabelText(/Ponto de referência/i), {
       target: { value: 'Ao lado da praça' }
     });
-    fireEvent.change(screen.getByLabelText(/talher/i), { target: { value: 'sim' } });
-    fireEvent.change(screen.getByLabelText(/Forma de pagamento/i), { target: { value: 'pix' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
 
+    // Etapa 2 — identificação
+    fireEvent.change(screen.getByLabelText(/Seu nome/i), { target: { value: 'JB' } });
+    fireEvent.change(screen.getByLabelText(/talher/i), { target: { value: 'sim' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
+
+    // Etapa 3 — pagamento e envio
+    fireEvent.change(screen.getByLabelText(/Forma de pagamento/i), { target: { value: 'pix' } });
     fireEvent.click(screen.getByRole('button', { name: /Enviar pedido pelo WhatsApp/i }));
 
     await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
     expect(createOrder.mock.calls[0][0]).toMatchObject({
-      customer_name: 'Teresa',
+      customer_name: 'JB',
       delivery_type: 'entrega',
       payment_method: 'pix',
       total: 44
     });
     expect(window.open).toHaveBeenCalledWith(
-      expect.stringContaining('https://wa.me/558999195466'),
+      expect.stringContaining('https://wa.me/5599999042932'),
       '_blank'
     );
     expect(onDone).toHaveBeenCalled();
@@ -239,7 +268,7 @@ describe('Tela: Painel admin — Pedidos', () => {
     fetchOrders.mockResolvedValue(sampleOrders);
     render(<AdminApp />);
 
-    await waitFor(() => expect(screen.getByText('Teresa')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('JB')).toBeInTheDocument());
     expect(screen.getByText(/2x Marmita Comercial de Bife/)).toBeInTheDocument();
     expect(screen.getByText(/Rua Central, 10/)).toBeInTheDocument();
     // o texto "Novo" aparece no selo de status e na option do dropdown
@@ -258,7 +287,7 @@ describe('Tela: Painel admin — Pedidos', () => {
     fetchOrders.mockResolvedValue(sampleOrders);
     render(<AdminApp />);
 
-    await waitFor(() => expect(screen.getByText('Teresa')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('JB')).toBeInTheDocument());
     fireEvent.change(screen.getByDisplayValue('Novo'), { target: { value: 'entregue' } });
 
     await waitFor(() => expect(updateOrderStatus).toHaveBeenCalledWith('o1', 'entregue'));

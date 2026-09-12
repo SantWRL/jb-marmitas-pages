@@ -1,9 +1,9 @@
 import { FaInstagram, FaFacebook, FaWhatsapp } from "react-icons/fa";
 
 const icons = [
-  { name: "Instagram", icon: FaInstagram, href: "https://instagram.com/jbmarmitas" },
+  { name: "Instagram", icon: FaInstagram, href: "https://instagram.com/jbmarmitasdelivery" },
   { name: "Facebook", icon: FaFacebook, href: "https://facebook.com/jbmarmitas" },
-  { name: "WhatsApp", icon: FaWhatsapp, href: "https://wa.me/558999195466" },
+  { name: "WhatsApp", icon: FaWhatsapp, href: "https://wa.me/5599999042932" },
 ];
 
 export default function IconList({ iconColor, hoverIconColor }) {

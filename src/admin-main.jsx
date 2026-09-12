@@ -176,8 +176,8 @@ export function ProductCard({ product, onChanged }) {
         <h3 className="product-title">{product.name}</h3>
         <p className="product-description">{product.description}</p>
         <div className="price-box">
-          <span className="product-price">{formatPrice(product.price)}</span>
-          {product.promo_price && <span className="original-price">{formatPrice(product.promo_price)}</span>}
+          <span className="product-price">{formatPrice(product.promo_price || product.price)}</span>
+          {product.promo_price && <span className="original-price">{formatPrice(product.price)}</span>}
         </div>
         <div className="admin-controls">
           <label>
@@ -346,7 +346,20 @@ export function AdminApp() {
           <h1>JB Marmitas</h1>
           <div className="hero-actions">
             <a className="hero-button hero-button-secondary" href="./index.html">⬅ Ver site</a>
-            <button className="hero-button hero-button-primary" onClick={() => signOutAdmin()}>Sair</button>
+            <button
+              className="hero-button hero-button-primary"
+              onClick={async () => {
+                // Sai mesmo se a chamada falhar: estado local não pode ficar
+                // preso com o painel aberto depois de "Sair".
+                try {
+                  await signOutAdmin();
+                } finally {
+                  setSession(null);
+                }
+              }}
+            >
+              Sair
+            </button>
           </div>
         </div>
       </header>

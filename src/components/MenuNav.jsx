@@ -3,6 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import clsx from "clsx";
 import Wrapper from "./Wrapper";
 
+// Navegação principal com a logo JB Marmitas à esquerda.
 export default function MenuNav({ onAuthClick }) {
   const location = useLocation().pathname;
   const routes = [
@@ -14,7 +15,14 @@ export default function MenuNav({ onAuthClick }) {
   return (
     <Wrapper>
       <NavigationMenu.Root className="flex flex-col gap-5 py-5 tablet:flex-row tablet:gap-16">
-        <h2 className="text-3xl font-italiana text-dark">JB Marmitas</h2>
+        <NavLink to="/" className="flex items-center gap-3 no-underline">
+          <img
+            src="/assets/img/logo-jb-marmitas.jpeg"
+            alt="Logo JB Marmitas"
+            className="h-14 w-14 rounded-xl object-cover"
+          />
+          <h2 className="text-3xl font-italiana text-dark">JB Marmitas</h2>
+        </NavLink>
         <NavigationMenu.List className="flex h-24 items-center justify-around tablet:h-full tablet:justify-center">
           {routes.map((rota, index) => (
             <NavigationMenu.Item key={index} className="h-full list-none px-5">

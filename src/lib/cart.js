@@ -1,6 +1,11 @@
 import { formatPrice } from './format.js';
 
-const PHONE = '558999195466';
+const PHONE = '5599999042932';
+
+// Limite por item: protege contra cliques descontrolados (ex.: o usuário
+// apertar "Pedir" mil vezes) e mantém a mensagem do WhatsApp em tamanho
+// aceitável. 99 marmitas já é muito para uma marmitaria.
+export const MAX_QTY_PER_ITEM = 99;
 
 export function calculateTotal(cart) {
   return Object.values(cart).reduce((total, item) => total + item.price * item.qty, 0);
@@ -14,9 +19,17 @@ export function addItem(cart, product) {
   if (product.out_of_stock) return cart;
 
   const updatedCart = { ...cart };
-  const price = Number(product.promo_price > 0 ? product.promo_price : product.price);
 
-  if (!updatedCart[product.id]) {
+  // promo_price pode vir null, undefined ou string do banco: Number() cobre
+  // tudo e NaN nunca passa no check de promocional.
+  const promo = Number(product.promo_price);
+  const price = Number(promo > 0 ? promo : product.price);
+  if (!Number.isFinite(price)) return cart;
+
+  const current = updatedCart[product.id];
+  if (current && current.qty >= MAX_QTY_PER_ITEM) return updatedCart;
+
+  if (!current) {
     updatedCart[product.id] = { id: product.id, name: product.name, price, qty: 0 };
   }
 

@@ -72,6 +72,7 @@ export function App() {
     <BrowserRouter>
       <DefaultPage onAuthClick={() => setAuthOpen(true)}>
         <Header />
+      </DefaultPage>
 
       {cartBar}
 
@@ -104,7 +105,6 @@ export function App() {
           onSignedIn={() => setAuthOpen(false)}
         />
       )}
-      </DefaultPage>
     </BrowserRouter>
   );
 }

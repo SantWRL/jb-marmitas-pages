@@ -34,13 +34,16 @@ cp .env.example .env   # preencha com a URL e a publishable key do projeto
 npm run dev
 ```
 
-- `npm test` roda os testes (Jest).
-- `npm run build` gera o site em `dist/`.
+- `npm test` roda os testes (Jest): lógica, telas, corridas (spam de cliques,
+  duplo envio) e integração CSS↔JSX.
+- `npm run build` gera o site em `dist/` (exige as variáveis do Supabase no
+  `.env` ou no ambiente).
 
 ## Deploy no GitHub Pages
 
 O deploy é automático: a cada push na branch `main`, o workflow
-`.github/workflows/deploy.yml` compila o site e publica no Pages.
+`.github/workflows/deploy.yml` roda os testes, compila o site e publica no
+Pages.
 
 Uma única configuração é necessária no repositório:
 

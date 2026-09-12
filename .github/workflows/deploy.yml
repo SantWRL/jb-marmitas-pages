@@ -27,6 +27,10 @@ jobs:
 
       - run: npm ci
 
+      # Antes de publicar, garante que a suíte inteira passa (TDD na esteira).
+      - name: Test
+        run: npm test
+
       - name: Build
         run: npm run build
         env:

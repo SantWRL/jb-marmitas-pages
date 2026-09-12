@@ -19,7 +19,7 @@ describe('Tela: erro de configuração do Supabase', () => {
     expect(screen.getByText('VITE_SUPABASE_PUBLISHABLE_KEY')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /falar com a JB Marmitas/ })).toHaveAttribute(
       'href',
-      'https://wa.me/558999195466'
+      'https://wa.me/5599999042932'
     );
   });
 });

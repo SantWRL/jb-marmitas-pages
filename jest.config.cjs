@@ -7,7 +7,7 @@ module.exports = {
     {
       displayName: 'unit',
       testEnvironment: 'node',
-      testMatch: ['<rootDir>/tests/app.test.js'],
+      testMatch: ['<rootDir>/tests/*.test.js'],
       transform: {
         '^.+\\.jsx?$': ['babel-jest', { configFile: './babel.config.cjs' }]
       },
@@ -26,9 +26,7 @@ module.exports = {
         '\\.css$': '<rootDir>/tests/__mocks__/css-stub.cjs',
         // Aliases de import (iguais ao jsconfig.json)
         '^components/(.*)$': '<rootDir>/src/components/$1',
-        '^pages/(.*)$': '<rootDir>/src/pages/$1',
-        '^data/(.*)$': '<rootDir>/src/data/$1',
-        '^types/(.*)$': '<rootDir>/src/types/$1',
+        '^lib/(.*)$': '<rootDir>/src/lib/$1',
         '^assets/(.*)$': '<rootDir>/assets/$1'
       }
     }

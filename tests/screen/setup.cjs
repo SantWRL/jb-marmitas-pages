@@ -51,13 +51,13 @@ export const sampleOrders = [
     id: 'o1',
     created_at: '2026-09-09T12:00:00Z',
     status: 'novo',
-    customer_name: 'Teresa',
+    customer_name: 'JB',
     delivery_type: 'entrega',
     address: 'Rua Central, 10',
     reference: 'Próximo à praça',
     cutlery: true,
     payment_method: 'pix',
-    payment_details: 'Pix: 558999195466',
+    payment_details: 'Pix: 5599999042932',
     total: 44,
     items: [{ id: 'p1', name: 'Marmita Comercial de Bife', price: 22, qty: 2 }]
   }
