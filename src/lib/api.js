@@ -68,26 +68,34 @@ export async function uploadProductImage(file) {
 
 // ---------- PEDIDOS ----------
 
+// OBS: aqui não usamos .select() depois do .insert(). O cliente que faz o
+// pedido no site é sempre anônimo (anon), e a policy de SELECT em "orders"
+// só libera para usuários autenticados (o admin). Se a gente pedisse pra
+// ler a linha de volta logo após inserir, o Postgres barrava essa leitura
+// e desfazia o insert inteiro, dando o erro de RLS. Por isso geramos o
+// "id" e o "created_at" aqui no navegador mesmo, e devolvemos o objeto
+// completo sem precisar ler nada de volta do banco.
 export async function createOrder(order) {
-  const { data, error } = await supabase
-    .from('orders')
-    .insert({
-      customer_name: order.customer_name,
-      customer_email: order.customer_email ?? null,
-      delivery_type: order.delivery_type,
-      address: order.address ?? null,
-      reference: order.reference ?? null,
-      cutlery: order.cutlery ?? false,
-      payment_method: order.payment_method,
-      payment_details: order.payment_details ?? null,
-      total: order.total,
-      items: order.items
-    })
-    .select()
-    .single();
+  const newOrder = {
+    id: crypto.randomUUID(),
+    created_at: new Date().toISOString(),
+    status: 'novo',
+    customer_name: order.customer_name,
+    customer_email: order.customer_email ?? null,
+    delivery_type: order.delivery_type,
+    address: order.address ?? null,
+    reference: order.reference ?? null,
+    cutlery: order.cutlery ?? false,
+    payment_method: order.payment_method,
+    payment_details: order.payment_details ?? null,
+    total: order.total,
+    items: order.items
+  };
+
+  const { error } = await supabase.from('orders').insert(newOrder);
 
   if (error) throw error;
-  return data;
+  return newOrder;
 }
 
 export async function fetchOrders() {
