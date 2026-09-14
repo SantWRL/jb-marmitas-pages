@@ -14,8 +14,16 @@ export function balsasNow(date = new Date()) {
   return new Date(date.getTime() - 3 * 60 * 60 * 1000);
 }
 
+// Modo teste local: com VITE_FORCE_OPEN=true o site ignora a janela de
+// funcionamento para você testar o fluxo de pedidos fora do horário.
+// Só vale no `npm run dev` (import.meta.env.DEV): builds de produção
+// sempre respeitam a janela real, não importa o que tenha no ambiente.
+const FORCE_OPEN =
+  import.meta.env.DEV && import.meta.env.VITE_FORCE_OPEN === 'true';
+
 // Janela [11:00, 14:00): às 11h em ponto abre, às 14h em ponto já fechou.
 export function isWithinBusinessHours(date = new Date()) {
+  if (FORCE_OPEN) return true;
   const hour = balsasNow(date).getUTCHours();
   return hour >= OPEN_HOUR && hour < CLOSE_HOUR;
 }

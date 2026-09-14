@@ -202,6 +202,25 @@ describe('Tela: Modal de pedido', () => {
     expect(screen.getByText('← Voltar')).toBeInTheDocument();
   });
 
+  test('etapa Pagamento mostra a chave Pix com botão de copiar', async () => {
+    render(<OrderModal cart={cart} onClose={() => {}} onDone={() => {}} />);
+
+    preencherEntrega();
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
+    fireEvent.change(screen.getByLabelText(/Seu nome/i), { target: { value: 'JB' } });
+    fireEvent.change(screen.getByLabelText(/Seu WhatsApp/i), { target: { value: '(99) 99999-9999' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
+
+    // Chave Pix nova visível e botão para copiar sem selecionar o número
+    expect(screen.getByText('99984257418')).toBeInTheDocument();
+    const writeText = jest.fn().mockResolvedValue(undefined);
+    Object.defineProperty(window.navigator, 'clipboard', { value: { writeText }, configurable: true });
+    fireEvent.click(screen.getByRole('button', { name: /Copiar chave Pix/i }));
+
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith('99984257418'));
+    expect(screen.getByText(/Copiado ✓/i)).toBeInTheDocument();
+  });
+
   test('submit no meio do formulário avança etapa em vez de abrir o WhatsApp', () => {
     // Regressão do bug antigo: Enter no formulário pulava tudo e abria o
     // WhatsApp sem o cliente escolher a forma de pagamento.

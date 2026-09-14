@@ -12,6 +12,9 @@ const PAYMENT_OPTIONS = [
 
 const STEPS = ["Entrega", "Você", "Pagamento"];
 
+// Chave Pix mostrada na etapa Pagamento, com botão para copiar.
+const PIX_KEY = "99984257418";
+
 // Modal de finalização em etapas: 1) Entrega  2) Você  3) Pagamento.
 // Só a etapa atual fica montada (os dados vivem no estado do componente,
 // nada se perde ao voltar/avançar) e o submit só faz algo na última etapa —
@@ -36,6 +39,8 @@ export default function OrderModal({ cart, onClose, onDone }) {
   const [customerPhone, setCustomerPhone] = useState("");
   const [cutlery, setCutlery] = useState("sim");
   const [paymentMethod, setPaymentMethod] = useState("pix");
+  // Feedback do botão "Copiar" da chave Pix (volta ao normal depois de 2s).
+  const [pixCopied, setPixCopied] = useState(false);
   // LGPD art. 7º, I e 8º: consentimento livre, informado e inequívoco,
   // coletado por ação positiva (checkbox) antes do dado ir para o banco
   // e para o WhatsApp.
@@ -51,6 +56,30 @@ export default function OrderModal({ cart, onClose, onDone }) {
     (step === 0 && (deliveryType === "retirada" || (street.trim() && number.trim() && district.trim()))) ||
     (step === 1 && Boolean(customerName.trim()) && customerPhone.replace(/\D/g, "").length >= 10) ||
     (step === 2 && lgpdConsent);
+
+  // Copia a chave Pix sem o cliente precisar selecionar o número na tela.
+  async function handleCopyPix() {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(PIX_KEY);
+      } else {
+        // Fallback para navegadores/ambientes sem a Clipboard API.
+        const helper = document.createElement("textarea");
+        helper.value = PIX_KEY;
+        helper.setAttribute("readonly", "");
+        helper.style.position = "fixed";
+        helper.style.opacity = "0";
+        document.body.appendChild(helper);
+        helper.select();
+        document.execCommand("copy");
+        helper.remove();
+      }
+      setPixCopied(true);
+      window.setTimeout(() => setPixCopied(false), 2000);
+    } catch {
+      setPixCopied(false);
+    }
+  }
 
   function goNext() {
     if (step === 0 && deliveryType === "entrega" && !(street.trim() && number.trim() && district.trim())) {
@@ -363,7 +392,12 @@ export default function OrderModal({ cart, onClose, onDone }) {
             {paymentMethod === "pix" && (
               <p className="payment-note">
                 <strong>Pix (Copia e Cola)</strong>
-                <span>5599999042932</span>
+                <span className="pix-key-row">
+                  <span className="pix-key">{PIX_KEY}</span>
+                  <button type="button" className="pix-copy-button" onClick={handleCopyPix}>
+                    {pixCopied ? "Copiado ✓" : "Copiar chave Pix"}
+                  </button>
+                </span>
                 Confirme o pagamento no WhatsApp após enviar o pedido.
               </p>
             )}
