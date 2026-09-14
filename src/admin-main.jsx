@@ -47,7 +47,19 @@ export function AdminLogin({ onSignedIn }) {
       await signInAdmin(email, password);
       onSignedIn();
     } catch (err) {
-      setError('Email ou senha incorretos.');
+      // Mensagem genérica escondia a causa real (ex.: conta criada por SQL
+      // manual sem identidade, ou email não confirmado). Mapeia os erros
+      // conhecidos do GoTrue para orientações acionáveis.
+      const motivo = String(err?.message || '');
+      if (/invalid login credentials/i.test(motivo)) {
+        setError('Email ou senha incorretos.');
+      } else if (/email not confirmed/i.test(motivo)) {
+        setError('Este email ainda não foi confirmado. No Supabase: Authentication > Users > ... > confirme o usuário (ou recrie marcando Auto Confirm User).');
+      } else if (/database error querying schema/i.test(motivo)) {
+        setError('Conta de admin quebrada (criada por SQL manual, sem identidade de login). Apague o usuário em Authentication > Users e recrie por lá com Auto Confirm User.');
+      } else {
+        setError('Erro ao entrar: ' + (motivo || 'tente novamente.'));
+      }
     } finally {
       setBusy(false);
     }

@@ -40,6 +40,17 @@ create table if not exists public.orders (
   items          jsonb not null default '[]'::jsonb
 );
 
+-- Migração para tabelas criadas por versões anteriores do schema: adiciona
+-- as colunas novas sem tocar em nada que já existe. Pode re-executar.
+-- VEM ANTES do índice abaixo: em tabelas antigas sem `order_number`, criar
+-- o índice antes da coluna falhava com 42703 (column does not exist).
+alter table public.orders add column if not exists customer_phone   text;
+alter table public.orders add column if not exists district         text;
+alter table public.orders add column if not exists order_number     bigint;
+-- LGPD art. 7º, I: guarda o momento do consentimento dado pelo cliente
+-- (checkbox do checkout). Nulo = pedido criado antes da migração.
+alter table public.orders add column if not exists lgpd_consent_at  timestamptz;
+
 -- Nº do pedido (exibição). Índice comum, NÃO único: dois pedidos
 -- simultâneos podem calcular o mesmo número (contagem no navegador) e um
 -- índice único rejeitaria o pedido de um cliente de verdade. Duplicado é
@@ -47,15 +58,6 @@ create table if not exists public.orders (
 create index if not exists orders_order_number_idx
   on public.orders (order_number)
   where order_number is not null;
-
--- Migração para tabelas criadas por versões anteriores do schema: adiciona
--- as colunas novas sem tocar em nada que já existe. Pode re-executar.
-alter table public.orders add column if not exists customer_phone   text;
-alter table public.orders add column if not exists district         text;
-alter table public.orders add column if not exists order_number     bigint;
--- LGPD art. 7º, I: guarda o momento do consentimento dado pelo cliente
--- (checkbox do checkout). Nulo = pedido criado antes da migração.
-alter table public.orders add column if not exists lgpd_consent_at  timestamptz;
 
 -- ---------- HORÁRIO DE FUNCIONAMENTO (11h às 14h) ----------
 -- Balsas-MA é UTC-3 o ano inteiro (sem horário de verão no Brasil desde

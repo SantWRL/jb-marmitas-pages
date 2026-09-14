@@ -12,9 +12,11 @@
 -- do admin em supabase/schema.sql (função is_admin).
 -- ============================================================
 
--- 1) Troque pelos dados desejados e execute APENAS este bloco:
-select auth.users  -- verificação rápida de acesso à tabela
-where false;
+-- 1) Verificação rápida de acesso: o SQL Editor consegue ler auth.users?
+--    Deve retornar uma única linha com acesso_ok = t.
+--    (O "select auth.users where false" antigo era SQL inválido:
+--    erro 42P01 missing FROM-clause entry for table "auth".)
+select exists (select 1 from auth.users) as acesso_ok;
 
 insert into auth.users (
   instance_id, id, aud, role, email,
@@ -33,7 +35,9 @@ insert into auth.users (
   '{"role":"admin"}'::jsonb,
   now(), now(), '', ''
 )
-on conflict (email) do nothing;
+-- Sem alvo de conflito: funciona em qualquer versão do schema auth
+-- (o índice único de email varia entre versões do GoTrue/Supabase).
+on conflict do nothing;
 
 -- 2) Confirma que a função is_admin() reconhece o email:
 --    (rode e veja se retorna t; se retornar f, os emails não batem)
