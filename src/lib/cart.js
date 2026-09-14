@@ -11,6 +11,11 @@ export function calculateTotal(cart) {
   return Object.values(cart).reduce((total, item) => total + item.price * item.qty, 0);
 }
 
+// Taxa fixa de entrega cobrada em todo pedido com entrega (retirada não
+// paga). Usada no resumo do modal, no total salvo no Supabase e na
+// mensagem do WhatsApp.
+export const DELIVERY_FEE = 7;
+
 export function cartQuantity(cart) {
   return Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
 }
@@ -92,8 +97,8 @@ export function formatOrderNumber(value) {
 //   💵 1 x R$ 22,00 = R$ 22,00
 //   -------------------------------
 //   SUBTOTAL: R$ 22,00
-//   ENTREGA: R$ 0,00
-//   *VALOR FINAL: R$ 22,00*
+//   ENTREGA: R$ 7,00
+//   *VALOR FINAL: R$ 29,00*
 //   PAGAMENTO: *Pix*: R$ 22,00
 //   🕐 Prazo para entrega: 30 a 40 min
 export function formatWhatsAppMessage({
@@ -110,10 +115,13 @@ export function formatWhatsAppMessage({
   complement = '',
   paymentMethod,
   paymentDetails = '',
-  deliveryFee = 0,
+  // Padrão: taxa fixa de entrega. Retirada passa deliveryFee: 0.
+  deliveryFee = DELIVERY_FEE,
   deliveryTime = '30 a 40 min'
 }) {
   const total = calculateTotal(cart);
+  // Retirada nunca paga taxa, mesmo se alguém passar deliveryFee por engano.
+  const fee = deliveryType === 'retirada' ? 0 : deliveryFee;
   const when = orderDate || new Date();
   // "07/09/2026 22:52" — data e hora separadas porque o toLocaleString
   // completo interpõe uma vírgula entre elas.
@@ -161,11 +169,11 @@ export function formatWhatsAppMessage({
 
   lines.push('-------------------------------');
   lines.push(`SUBTOTAL: ${formatPrice(total)}`);
-  lines.push(`ENTREGA: ${formatPrice(deliveryFee)}`);
-  lines.push(`*VALOR FINAL: ${formatPrice(total + deliveryFee)}*`);
+  lines.push(`ENTREGA: ${formatPrice(fee)}`);
+  lines.push(`*VALOR FINAL: ${formatPrice(total + fee)}*`);
 
   lines.push('PAGAMENTO');
-  lines.push(`*${paymentDetails || paymentMethod || 'A combinar'}*: ${formatPrice(total + deliveryFee)}`);
+  lines.push(`*${paymentDetails || paymentMethod || 'A combinar'}*: ${formatPrice(total + fee)}`);
 
   if (deliveryType !== 'retirada') {
     lines.push(`🕐 Prazo para entrega: ${deliveryTime}`);

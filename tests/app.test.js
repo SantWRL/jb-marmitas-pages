@@ -92,18 +92,18 @@ describe('Mensagem de WhatsApp', () => {
     expect(message).toContain('q=Rua%20Castro%20Alves%2C%20327%2C%20Junco%2C%20Balsas%20MA');
   });
 
-  test('Deve mostrar subtotal, entrega zerada e valor final', () => {
+  test('Deve cobrar a taxa de entrega no valor final', () => {
     const message = decode(build());
 
     expect(message).toContain('SUBTOTAL: R$ 20,00');
-    expect(message).toContain('ENTREGA: R$ 0,00');
-    expect(message).toContain('*VALOR FINAL: R$ 20,00*');
+    expect(message).toContain('ENTREGA: R$ 7,00');
+    expect(message).toContain('*VALOR FINAL: R$ 27,00*');
   });
 
   test('Deve mostrar prazo de 30 a 40 min e forma de pagamento', () => {
     const message = decode(build({ paymentMethod: 'cartao', paymentDetails: 'Cartão de crédito' }));
 
-    expect(message).toContain('*Cartão de crédito*: R$ 20,00');
+    expect(message).toContain('*Cartão de crédito*: R$ 27,00');
     expect(message).toContain('🕐 Prazo para entrega: 30 a 40 min');
   });
 
@@ -122,6 +122,15 @@ describe('Mensagem de WhatsApp', () => {
     expect(message).not.toContain('Endereço de entrega');
     expect(message).not.toContain('Link do endereço:');
     expect(message).not.toContain('Prazo para entrega');
+  });
+
+  test('Retirada fica isenta da taxa: valor final = subtotal', () => {
+    const message = decode(
+      build({ deliveryType: 'retirada', street: '', number: '', district: '' })
+    );
+
+    expect(message).toContain('ENTREGA: R$ 0,00');
+    expect(message).toContain('*VALOR FINAL: R$ 20,00*');
   });
 
   test('formatCustomerPhone normaliza celular com ou sem DDD do Brasil', () => {

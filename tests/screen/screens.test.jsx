@@ -271,7 +271,7 @@ describe('Tela: Modal de pedido', () => {
       delivery_type: 'entrega',
       district: 'Junco',
       payment_method: 'pix',
-      total: 44
+      total: 51 // 44 dos itens + 7 de taxa de entrega
     });
     expect(window.open).toHaveBeenCalledWith(
       expect.stringContaining('https://wa.me/5599999042932'),

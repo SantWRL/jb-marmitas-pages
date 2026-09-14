@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { formatWhatsAppMessage, calculateTotal, cartQuantity } from "../lib/cart.js";
+import { formatWhatsAppMessage, calculateTotal, cartQuantity, DELIVERY_FEE } from "../lib/cart.js";
 import { createOrder } from "../lib/api.js";
 import { formatPrice } from "../lib/format.js";
 import { isWithinBusinessHours } from "../lib/hours.js";
@@ -47,6 +47,11 @@ export default function OrderModal({ cart, onClose, onDone }) {
   const [lgpdConsent, setLgpdConsent] = useState(false);
 
   const paymentDetails = PAYMENT_OPTIONS.find(([value]) => value === paymentMethod)?.[1];
+
+  // Taxa fixa de entrega: só quem recebe em casa paga (retirada é isenta).
+  // Vale para o resumo, para o total salvo no banco e para o WhatsApp.
+  const deliveryFee = deliveryType === "entrega" ? DELIVERY_FEE : 0;
+  const grandTotal = total + deliveryFee;
 
   // Validação por etapa:
   //  - Entrega: retirada passa direto; entrega exige rua, número e bairro.
@@ -159,7 +164,7 @@ export default function OrderModal({ cart, onClose, onDone }) {
         payment_method: paymentMethod,
         payment_details: paymentDetails,
         lgpd_consent_at: lgpdConsent ? orderDate.toISOString() : null,
-        total,
+        total: grandTotal,
         items: Object.values(cart).map(({ id, name, price, qty }) => ({ id, name, price, qty }))
       });
 
@@ -191,7 +196,8 @@ export default function OrderModal({ cart, onClose, onDone }) {
         district,
         reference,
         paymentMethod,
-        paymentDetails
+        paymentDetails,
+        deliveryFee
       });
 
       // popup bloqueado não deixa o cliente sem o pedido: cai para abrir
@@ -224,6 +230,7 @@ export default function OrderModal({ cart, onClose, onDone }) {
         <h2>Dados para entrega</h2>
         <p className="order-summary">
           {quantity} {quantity === 1 ? "item no pedido" : "itens no pedido"} · {formatPrice(total)}
+          {deliveryFee > 0 && ` · + ${formatPrice(deliveryFee)} de entrega`}
         </p>
 
         {/* Indicador de etapas */}
@@ -443,7 +450,12 @@ export default function OrderModal({ cart, onClose, onDone }) {
                   </li>
                 ))}
               </ul>
-              <p className="order-review-total">Total: {formatPrice(total)}</p>
+              <p className="order-review-fee">
+                {deliveryType === "retirada"
+                  ? "Taxa de entrega: isenta (retirada no local)"
+                  : `Taxa de entrega: ${formatPrice(deliveryFee)}`}
+              </p>
+              <p className="order-review-total">Total: {formatPrice(grandTotal)}</p>
               <p>
                 {deliveryType === "retirada"
                   ? "Retirada no local"
