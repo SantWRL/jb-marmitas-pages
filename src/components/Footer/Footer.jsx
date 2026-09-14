@@ -26,6 +26,11 @@ export default function Footer({
             .
           </p>
         </div>
+        {/* LGPD: aviso de privacidade sempre visível no rodapé. */}
+        <p className="footer-legal">
+          Seus dados são usados apenas para pedidos. Consulte a{" "}
+          <a href="./privacidade.html">Política de Privacidade</a>.
+        </p>
       </Wrapper>
     </footer>
   );

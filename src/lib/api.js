@@ -76,23 +76,62 @@ export async function uploadProductImage(file) {
 // "id" e o "created_at" aqui no navegador mesmo, e devolvemos o objeto
 // completo sem precisar ler nada de volta do banco.
 export async function createOrder(order) {
+  const createdAt = order.created_at ?? new Date().toISOString();
+
+  // Número sequencial do pedido. O count no client anônimo SEMPRE volta
+  // null (a RLS de SELECT em "orders" só libera para o admin), então na
+  // prática quem numera é o contador local do navegador — que é exibido
+  // no modal, no WhatsApp e no painel. Mantemos a tentativa por compatibi-
+  // lidade (se a policy mudar, passa a valer o count).
+  let orderNumber = null;
+  try {
+    const { count, error } = await supabase
+      .from('orders')
+      .select('*', { count: 'exact', head: true });
+    if (!error && Number.isFinite(count)) {
+      orderNumber = count + 1;
+    }
+  } catch {
+    // Sem count (coluna/permissoes): segue com null sem quebrar o pedido.
+  }
+
   const newOrder = {
     id: crypto.randomUUID(),
-    created_at: new Date().toISOString(),
+    created_at: createdAt,
     status: 'novo',
     customer_name: order.customer_name,
+    customer_phone: order.customer_phone ?? null,
     customer_email: order.customer_email ?? null,
     delivery_type: order.delivery_type,
     address: order.address ?? null,
+    district: order.district ?? null,
     reference: order.reference ?? null,
     cutlery: order.cutlery ?? false,
     payment_method: order.payment_method,
     payment_details: order.payment_details ?? null,
+    lgpd_consent_at: order.lgpd_consent_at ?? null,
+    order_number: orderNumber,
     total: order.total,
     items: order.items
   };
 
   const { error } = await supabase.from('orders').insert(newOrder);
+
+  // Código 42703 = coluna inexistente (order_number, customer_phone ou
+  // district ainda sem migração). Refazemos o insert sem as colunas novas
+  // para o pedido NÃO se perder durante a migração.
+  if (error && (error.code === '42703' || /column .* does not exist/i.test(error.message))) {
+    const {
+      order_number: _omitted,
+      customer_phone: _phone,
+      district: _bairro,
+      lgpd_consent_at: _consentimento,
+      ...legacyOrder
+    } = newOrder;
+    const { error: legacyError } = await supabase.from('orders').insert(legacyOrder);
+    if (legacyError) throw legacyError;
+    return { ...legacyOrder, order_number: null };
+  }
 
   if (error) throw error;
   return newOrder;

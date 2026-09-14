@@ -110,12 +110,12 @@ describe('Mensagem do WhatsApp sob stress', () => {
       cart = addItem(cart, product({ id: '2', name: 'Suco de Laranja', price: 7 }));
     }
 
-    const url = formatWhatsAppMessage(cart, 'Cliente', 'Rua Central, 10', PHONE);
+    const url = formatWhatsAppMessage({ cart, orderNumber: 1, customerName: 'Cliente', customerPhone: '9999999999', street: 'Rua Central', number: '10' });
     expect(url).toContain(`https://wa.me/${PHONE}?text=`);
 
     const message = decodeURIComponent(url.split('?text=')[1]);
-    expect(message).toContain(`99x Marmita Comercial`);
-    expect(message).toContain('*TOTAL:*');
+    expect(message).toContain('99 x Marmita Comercial');
+    expect(message).toContain('VALOR FINAL');
     // URL completa dentro do limite prático do WhatsApp (~4096 caracteres)
     expect(url.length).toBeLessThan(4096);
   });

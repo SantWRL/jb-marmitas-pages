@@ -26,22 +26,92 @@ create table if not exists public.orders (
   status         text not null default 'novo' check (status in ('novo', 'aceito', 'entregue', 'cancelado')),
   customer_name  text not null,
   customer_email text,
+  customer_phone text,
   delivery_type  text not null default 'entrega' check (delivery_type in ('entrega', 'retirada')),
   address        text,
+  district       text,
   reference      text,
   cutlery        boolean not null default false,
   payment_method text not null default 'pix' check (payment_method in ('pix', 'cartao', 'dinheiro')),
   payment_details text,
+  lgpd_consent_at timestamptz,
+  order_number   bigint,
   total          numeric(10,2) not null default 0,
   items          jsonb not null default '[]'::jsonb
 );
+
+-- Nº do pedido (exibição). Índice comum, NÃO único: dois pedidos
+-- simultâneos podem calcular o mesmo número (contagem no navegador) e um
+-- índice único rejeitaria o pedido de um cliente de verdade. Duplicado é
+-- inofensivo; pedido perdido não.
+create index if not exists orders_order_number_idx
+  on public.orders (order_number)
+  where order_number is not null;
+
+-- Migração para tabelas criadas por versões anteriores do schema: adiciona
+-- as colunas novas sem tocar em nada que já existe. Pode re-executar.
+alter table public.orders add column if not exists customer_phone   text;
+alter table public.orders add column if not exists district         text;
+alter table public.orders add column if not exists order_number     bigint;
+-- LGPD art. 7º, I: guarda o momento do consentimento dado pelo cliente
+-- (checkbox do checkout). Nulo = pedido criado antes da migração.
+alter table public.orders add column if not exists lgpd_consent_at  timestamptz;
+
+-- ---------- HORÁRIO DE FUNCIONAMENTO (11h às 14h) ----------
+-- Balsas-MA é UTC-3 o ano inteiro (sem horário de verão no Brasil desde
+-- 2019), então a janela 11h-14h local equivale a 14h-17h UTC. A checagem
+-- usa o relógio DO SERVIDOR (now()): relógio errado no celular do cliente
+-- ou um site adulterado não conseguem cadastrar pedido fora do horário.
+-- O erro volta claro para o checkout ("Erro ao enviar o pedido: ...").
+create or replace function public.enforce_order_hours()
+returns trigger
+language plpgsql
+as $$
+begin
+  if extract(hour from (now() at time zone 'UTC')) not between 14 and 16 then
+    raise exception using
+      errcode = 'check_violation',
+      message = 'Pedidos aceitos apenas das 11h às 14h (horário de Balsas). Volte no horário!';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists orders_hours_guard on public.orders;
+create trigger orders_hours_guard
+  before insert on public.orders
+  for each row
+  execute function public.enforce_order_hours();
+
+-- ---------- ADMINISTRADOR (LGPD + segurança) ----------
+
+-- Função central de autorização: SECURITY DEFINER para enxergar auth.users
+-- dentro das políticas de RLS. STABLE = resultado igual dentro do statement.
+-- O email é comparado em minúsculas para evitar bisbilhotar caixa alta/baixa.
+-- REGISTRE O ADMIN em Authentication > Users com EXATAMENTE este email
+-- (ou edite o email abaixo e rode este arquivo de novo).
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+set search_path = ''
+stable
+as $$
+  select exists (
+    select 1
+    from auth.users
+    where lower(email) = 'admin@jbmarmitas.com.br'
+      and id = auth.uid()
+  );
+$$;
 
 -- ---------- ROW LEVEL SECURITY ----------
 
 alter table public.products enable row level security;
 alter table public.orders   enable row level security;
 
--- Produtos: qualquer visitante lê o cardápio; só admins autenticados modificam
+-- Produtos: qualquer visitante lê o cardápio; SÓ O ADMIN modifica
+-- (antes, qualquer conta autenticada podia apagar o cardápio inteiro).
 drop policy if exists "Cardápio público" on public.products;
 create policy "Cardápio público"
   on public.products for select
@@ -49,13 +119,15 @@ create policy "Cardápio público"
   using (true);
 
 drop policy if exists "Admin gerencia produtos" on public.products;
-create policy "Admin gerencia produtos"
+drop policy if exists "Admin gerencia produtos (is_admin)" on public.products;
+create policy "Admin gerencia produtos (is_admin)"
   on public.products for all
   to authenticated
-  using (true)
-  with check (true);
+  using (public.is_admin())
+  with check (public.is_admin());
 
--- Pedidos: qualquer visitante cria; só admins autenticados leem/editam
+-- Pedidos: qualquer visitante cria (com consentimento LGPD);
+-- leitura, edição e exclusão SÓ PARA O ADMIN.
 drop policy if exists "Cliente cria pedido" on public.orders;
 create policy "Cliente cria pedido"
   on public.orders for insert
@@ -63,23 +135,26 @@ create policy "Cliente cria pedido"
   with check (true);
 
 drop policy if exists "Admin le pedidos" on public.orders;
-create policy "Admin le pedidos"
+drop policy if exists "Admin le pedidos (is_admin)" on public.orders;
+create policy "Admin le pedidos (is_admin)"
   on public.orders for select
   to authenticated
-  using (true);
+  using (public.is_admin());
 
 drop policy if exists "Admin atualiza pedidos" on public.orders;
-create policy "Admin atualiza pedidos"
+drop policy if exists "Admin atualiza pedidos (is_admin)" on public.orders;
+create policy "Admin atualiza pedidos (is_admin)"
   on public.orders for update
   to authenticated
-  using (true)
-  with check (true);
+  using (public.is_admin())
+  with check (public.is_admin());
 
 drop policy if exists "Admin exclui pedidos" on public.orders;
-create policy "Admin exclui pedidos"
+drop policy if exists "Admin exclui pedidos (is_admin)" on public.orders;
+create policy "Admin exclui pedidos (is_admin)"
   on public.orders for delete
   to authenticated
-  using (true);
+  using (public.is_admin());
 
 -- ---------- STORAGE (fotos dos produtos) ----------
 

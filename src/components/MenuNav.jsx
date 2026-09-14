@@ -23,7 +23,9 @@ export default function MenuNav({ onAuthClick }) {
           />
           <h2 className="text-3xl font-italiana text-dark">JB Marmitas</h2>
         </NavLink>
-        <NavigationMenu.List className="flex h-24 items-center justify-around tablet:h-full tablet:justify-center">
+        {/* Mobile: flex-wrap deixa as opções quebrarem linha em vez de
+            vazarem da tela (o trio Início/Cardápio/Sobre passa de 320px). */}
+        <NavigationMenu.List className="flex min-h-24 flex-wrap items-center justify-around gap-y-1 tablet:h-full tablet:flex-nowrap tablet:justify-center">
           {routes.map((rota, index) => (
             <NavigationMenu.Item key={index} className="h-full list-none px-5">
               <NavLink
@@ -48,9 +50,9 @@ export default function MenuNav({ onAuthClick }) {
           <button
             type="button"
             onClick={onAuthClick}
-            className="tablet:ml-auto self-start rounded-sm border border-darkGray px-4 py-2 text-xs font-bold uppercase tracking-wide text-dark transition-colors hover:cursor-pointer hover:border-red hover:text-red tablet:self-center"
+            className="self-center rounded-sm border border-darkGray px-4 py-2 text-xs font-bold uppercase tracking-wide text-dark transition-colors hover:cursor-pointer hover:border-red hover:text-red tablet:ml-auto"
           >
-            Entrar / cadastrar
+            Entrar
           </button>
         )}
       </NavigationMenu.Root>

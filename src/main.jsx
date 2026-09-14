@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { createRoot } from 'react-dom/client';
 import './styles/global.css';
 import { fetchProducts, subscribeToProducts } from './lib/api.js';
 import { addItem } from './lib/cart.js';
+import { closedMessage, useBusinessHours } from './lib/hours.js';
 import { supabaseConfigError } from './lib/supabase.js';
 import { ConfigErrorScreen } from './lib/ConfigErrorScreen.jsx';
 import Menu from './pages/menu.jsx';
+import PrivacyPolicy from './pages/privacy.jsx';
 import CartBar from './components/CartBar.jsx';
 import ItemModal from './components/ItemModal.jsx';
 import OrderModal from './components/OrderModal.jsx';
@@ -29,6 +31,11 @@ export function App() {
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
 
+  // Horário de funcionamento (11h às 14h): fora da janela, "Pedir" fica
+  // desabilitado e nada entra no carrinho. O hook reavalia sozinho a cada
+  // 30s, então a loja abre e fecha sem recarregar a página.
+  const storeOpen = useBusinessHours();
+
   const loadProducts = useCallback(async () => {
     try {
       setProducts(await fetchProducts());
@@ -47,13 +54,19 @@ export function App() {
     return () => unsubscribe();
   }, [loadProducts]);
 
-  const addToCart = useCallback((product) => {
-    setCart((current) => addItem(current, product));
-  }, []);
+  const addToCart = useCallback(
+    (product) => {
+      // Loja fechada = carrinho intocável (item nunca some do cardápio,
+      // só o botão de pedir que não faz nada).
+      if (!storeOpen || product.out_of_stock) return;
+      setCart((current) => addItem(current, product));
+    },
+    [storeOpen]
+  );
 
   const cartBar = useMemo(
-    () => <CartBar cart={cart} onOpenOrderModal={() => setOrderModalOpen(true)} />,
-    [cart]
+    () => <CartBar cart={cart} onOpenOrderModal={() => setOrderModalOpen(true)} storeOpen={storeOpen} />,
+    [cart, storeOpen]
   );
 
   if (supabaseConfigError) {
@@ -70,18 +83,33 @@ export function App() {
 
   return (
     <BrowserRouter>
-      <DefaultPage onAuthClick={() => setAuthOpen(true)}>
-        <Header />
-      </DefaultPage>
+      {!storeOpen && (
+        <div className="closed-banner" role="status">
+          {closedMessage()}
+        </div>
+      )}
+      <Routes>
+        {/* Política de Privacidade (LGPD): própria página, sem carrinho. */}
+        <Route path="/privacidade" element={<PrivacyPolicy />} />
+        {/* Menu dentro do DefaultPage: o rodapé (com os ícones sociais) só
+            pode aparecer depois do cardápio, no fim da página. */}
+        <Route
+          path="*"
+          element={
+            <DefaultPage onAuthClick={() => setAuthOpen(true)}>
+              <Header />
+              <Menu
+                products={products}
+                loading={loading}
+                onAdd={addToCart}
+                onOpenDetails={setDetailItem}
+              />
+            </DefaultPage>
+          }
+        />
+      </Routes>
 
       {cartBar}
-
-      <Menu
-        products={products}
-        loading={loading}
-        onAdd={addToCart}
-        onOpenDetails={setDetailItem}
-      />
 
       {detailItem && (
         <ItemModal

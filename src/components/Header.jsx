@@ -1,7 +1,11 @@
+import { BUSINESS_HOURS_LABEL, useBusinessHours } from '../lib/hours.js';
+
 // Hero da loja: fundo preto com a arte da logo JB Marmitas (sem foto de
 // comida). O degradê/brilho vem do CSS (.header-banner), aqui entram o
 // conteúdo e a imagem da logo.
 export default function Header() {
+  const storeOpen = useBusinessHours();
+
   return (
     <header className="header-banner">
       <div className="hero-content">
@@ -12,6 +16,11 @@ export default function Header() {
         />
         <h1>A marmita mais recheada da região</h1>
         <p>Marmitas caseiras feitas no dia, entregues quentinhas em Balsas - MA.</p>
+        <p className={`store-status ${storeOpen ? 'open' : 'closed'}`}>
+          {storeOpen
+            ? `Aberto agora · ${BUSINESS_HOURS_LABEL}`
+            : `Fechado · pedidos das ${BUSINESS_HOURS_LABEL}`}
+        </p>
         <div className="hero-actions">
           <a className="hero-button hero-button-primary" href="#cardapio">
             Ver cardápio

@@ -96,6 +96,13 @@ img { max-width: 100%; }
 @keyframes detail-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes detail-pop { from { transform: translateY(14px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
+/* Horário de funcionamento (11h-14h): selo no hero + faixa quando fechado */
+.store-status { margin-top: 14px; padding: 6px 12px; display: inline-block; border-radius: 999px; font-weight: 700; font-size: .76rem; }
+.store-status.open { background: #e8f5e9; color: #2e7d32; }
+.store-status.closed { background: #4a1f1f; color: #ff8a80; }
+.closed-banner { padding: 12px 28px; background: #4a1f1f; color: #ffd7d0; font-size: .8rem; font-weight: 700; text-align: center; }
+.cart-closed-msg { color: #ffd7d0; font-weight: 700; }
+
 /* Rodapé: horário de funcionamento + contato direto */
 .service-section { background: #0d0d0d; border-top: 1px solid var(--border); }
 .service-inner { width: min(1060px, 100%); margin: 0 auto; padding: 34px 28px 44px; }
@@ -122,6 +129,17 @@ img { max-width: 100%; }
 .order-dialog .modal-close { right: 14px; color: #fff; font-size: 1.8rem; }
 .order-field { display: block; margin-top: 13px; color: #ddd; font-size: .76rem; font-weight: 700; }
 .order-field input, .order-field select { width: 100%; margin-top: 6px; padding: 11px; border: 1px solid #3a3a3a; border-radius: 8px; outline-color: var(--accent); background: #0d0d0d; color: #fff; }
+/* Número + complemento lado a lado na etapa de entrega */
+.order-field-row { display: flex; gap: 10px; }
+.order-field-row .order-field { flex: 1; min-width: 0; }
+/* Formas de pagamento em cartões clicáveis (radio escondido visualmente) */
+.payment-options { border: 0; padding: 0; margin: 13px 0 0; }
+.payment-options legend { color: #ddd; font-size: .76rem; font-weight: 700; padding: 0; margin-bottom: 6px; }
+.payment-option { display: flex; align-items: center; gap: 10px; margin-top: 8px; padding: 12px 14px; border: 1px solid #3a3a3a; border-radius: 8px; background: #0d0d0d; color: #fff; font-size: .86rem; font-weight: 700; cursor: pointer; transition: border-color .2s, background .2s; }
+.payment-option input { position: absolute; opacity: 0; pointer-events: none; }
+.payment-option.selected { border-color: var(--accent); background: #241300; }
+.payment-option.selected::after { content: '✓'; margin-left: auto; color: var(--accent); font-weight: 900; }
+.payment-option:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
 .payment-note { margin-top: 12px; padding: 12px; border-left: 3px solid var(--accent); background: #211602; color: #ddd; font-size: .76rem; line-height: 1.45; }
 .payment-note strong { display: block; color: var(--accent); }
 .payment-note span { display: block; margin-top: 3px; color: #ddd; }
@@ -146,21 +164,23 @@ img { max-width: 100%; }
 /* Modal de Autenticação */
 .auth-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; }
 .auth-modal-backdrop { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, .75); }
-.auth-dialog { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; background: #fff; border-radius: 8px; padding: 28px; width: 90%; max-width: 420px; box-shadow: 0 8px 32px rgba(0, 0, 0, .3); }
-.auth-dialog .modal-close { right: 12px; color: #999; font-size: 1.5rem; }
-.auth-dialog h2 { margin-bottom: 20px; color: var(--text); font-family: 'Montserrat', sans-serif; font-size: 1.3rem; text-align: center; }
-.auth-tabs { display: flex; gap: 0; border-bottom: 2px solid #e7ded5; margin-bottom: 24px; }
-.auth-tab { flex: 1; padding: 12px; border: none; background: none; color: var(--muted); font-weight: 700; font-size: .85rem; text-transform: uppercase; cursor: pointer; border-bottom: 3px solid transparent; transition: all .25s; }
-.auth-tab.active { color: var(--primary); border-color: var(--primary); }
+.auth-dialog { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; background: #fff; border-radius: 10px; padding: 30px 28px; width: 90%; max-width: 400px; box-shadow: 0 8px 32px rgba(0, 0, 0, .3); }
+.auth-dialog .modal-close { top: 8px; right: 12px; color: #999; font-size: 1.6rem; }
+.auth-dialog h2 { margin-bottom: 22px; color: #111; font-family: 'Montserrat', sans-serif; font-size: 1.35rem; text-align: center; }
 .auth-tab-content { display: flex; flex-direction: column; gap: 12px; }
 .auth-field { display: flex; flex-direction: column; gap: 6px; }
-.auth-field label { color: var(--text); font-weight: 700; font-size: .8rem; }
-.auth-field input { padding: 10px 12px; border: 1px solid var(--border); border-radius: 5px; font-size: .9rem; transition: border-color .25s; }
-.auth-field input:focus { outline: none; border-color: var(--primary); }
+.auth-field label { color: #111; font-weight: 700; font-size: .82rem; }
+.auth-field input { padding: 12px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: .95rem; background: #fafafa; transition: border-color .25s, box-shadow .25s; }
+.auth-field input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(247, 147, 0, .18); background: #fff; }
 .auth-error { color: var(--danger); font-size: .8rem; padding: 8px; background: #ffebee; border-radius: 4px; text-align: center; }
-.submit-auth { padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 5px; font-weight: 700; font-size: .9rem; cursor: pointer; transition: opacity .25s; }
-.submit-auth:hover { opacity: .9; }
-.submit-auth:active { opacity: .8; }
+.submit-auth { padding: 13px; background: var(--primary); color: #111; border: none; border-radius: 6px; font-weight: 800; font-size: .85rem; text-transform: uppercase; letter-spacing: .5px; cursor: pointer; transition: filter .2s; }
+.submit-auth:hover:enabled { filter: brightness(1.1); }
+.submit-auth:disabled { opacity: .6; cursor: not-allowed; }
+
+/* Login do painel admin: mesma linguagem visual do modal do cliente */
+.admin-login-card { text-align: center; }
+.admin-login-card .form-group { text-align: left; }
+.admin-login-card .btn-submit { margin-top: 6px; padding: 12px; border-radius: 6px; font-weight: 800; }
 
 /* Painel Admin — Pedidos */
 .orders-list { display: flex; flex-direction: column; gap: 14px; }

@@ -130,28 +130,37 @@ describe('Tela: Site público (cardápio)', () => {
   test('abre o modal de login do cliente', async () => {
     render(<App />);
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Entrar / cadastrar' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Entrar' })).toBeInTheDocument()
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Entrar / cadastrar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
     expect(screen.getByText('Sua conta JB')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Login' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Cadastro' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Email')).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Senha/)).toBeInTheDocument();
   });
 });
 
 describe('Tela: Modal de pedido', () => {
   const cart = { p1: { id: 'p1', name: 'Marmita Comercial de Bife', price: 22, qty: 2 } };
 
+  // Preenche a etapa de entrega (rua, número e bairro obrigatórios)
+  const preencherEntrega = () => {
+    fireEvent.change(screen.getByLabelText(/^Rua$/), { target: { value: 'Rua Central' } });
+    fireEvent.change(screen.getByLabelText(/^Número$/), { target: { value: '10' } });
+    fireEvent.change(screen.getByLabelText(/^Bairro$/), { target: { value: 'Junco' } });
+  };
+
   test('mostra resumo e campos de entrega na primeira etapa', () => {
     render(<OrderModal cart={cart} onClose={() => {}} onDone={() => {}} />);
     expect(screen.getByText(/2 itens no pedido/)).toBeInTheDocument();
     expect(screen.getByText(/R\$ 44,00/)).toBeInTheDocument();
     expect(screen.getByLabelText(/Como vai receber/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Endereço em Balsas/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Rua$/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Número$/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Bairro$/)).toBeInTheDocument();
     // As etapas seguintes só aparecem depois de avançar
     expect(screen.queryByLabelText(/Seu nome/i)).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/Forma de pagamento/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('Forma de pagamento')).not.toBeInTheDocument();
   });
 
   test('retirada esconde campos de endereço', () => {
@@ -160,7 +169,7 @@ describe('Tela: Modal de pedido', () => {
       target: { value: 'retirada' }
     });
 
-    expect(screen.queryByLabelText(/Endereço em Balsas/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^Rua$/)).not.toBeInTheDocument();
     expect(screen.getByText('Retirada no local')).toBeInTheDocument();
   });
 
@@ -170,20 +179,40 @@ describe('Tela: Modal de pedido', () => {
     // Etapa 1 — endereço obrigatório para habilitar "Continuar"
     const continuar = screen.getByRole('button', { name: 'Continuar' });
     expect(continuar).toBeDisabled();
-    fireEvent.change(screen.getByLabelText(/Endereço em Balsas/i), {
-      target: { value: 'Rua Central, 10' }
+    preencherEntrega();
+    fireEvent.click(continuar);
+
+    // Etapa 2 — identificação (nome e WhatsApp obrigatórios)
+    expect(screen.getByLabelText(/Seu nome/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Seu WhatsApp/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/talher/i)).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/Seu nome/i), { target: { value: 'JB' } });
+    fireEvent.change(screen.getByLabelText(/Seu WhatsApp/i), {
+      target: { value: '(99) 99999-9999' }
     });
     fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
 
-    // Etapa 2 — identificação
-    expect(screen.getByLabelText(/Seu nome/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/talher/i)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
-
-    // Etapa 3 — pagamento e revisão
-    expect(screen.getByLabelText(/Forma de pagamento/i)).toBeInTheDocument();
+    // Etapa 3 — pagamento em cartões clicáveis + revisão
+    expect(screen.getByText('Forma de pagamento')).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: 'Pix' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Cartão de crédito' })).not.toBeChecked();
+    fireEvent.click(screen.getByRole('radio', { name: 'Cartão de crédito' }));
+    expect(screen.getByRole('radio', { name: 'Cartão de crédito' })).toBeChecked();
     expect(screen.getByText('Revise seu pedido')).toBeInTheDocument();
     expect(screen.getByText('← Voltar')).toBeInTheDocument();
+  });
+
+  test('submit no meio do formulário avança etapa em vez de abrir o WhatsApp', () => {
+    // Regressão do bug antigo: Enter no formulário pulava tudo e abria o
+    // WhatsApp sem o cliente escolher a forma de pagamento.
+    const { container } = render(<OrderModal cart={cart} onClose={() => {}} onDone={() => {}} />);
+    preencherEntrega();
+
+    fireEvent.submit(container.querySelector('form'));
+
+    // Foi para a etapa 2 (identificação) e NÃO abriu o WhatsApp
+    expect(screen.getByLabelText(/Seu nome/i)).toBeInTheDocument();
+    expect(window.open).not.toHaveBeenCalled();
   });
 
   test('envia o pedido: salva no Supabase e abre o WhatsApp', async () => {
@@ -192,10 +221,7 @@ describe('Tela: Modal de pedido', () => {
     render(<OrderModal cart={cart} onClose={() => {}} onDone={onDone} />);
 
     // Etapa 1 — entrega
-    fireEvent.change(screen.getByLabelText(/Como vai receber/i), { target: { value: 'entrega' } });
-    fireEvent.change(screen.getByLabelText(/Endereço em Balsas/i), {
-      target: { value: 'Rua Central, 10' }
-    });
+    preencherEntrega();
     fireEvent.change(screen.getByLabelText(/Ponto de referência/i), {
       target: { value: 'Ao lado da praça' }
     });
@@ -203,17 +229,28 @@ describe('Tela: Modal de pedido', () => {
 
     // Etapa 2 — identificação
     fireEvent.change(screen.getByLabelText(/Seu nome/i), { target: { value: 'JB' } });
+    fireEvent.change(screen.getByLabelText(/Seu WhatsApp/i), {
+      target: { value: '(99) 99999-9999' }
+    });
     fireEvent.change(screen.getByLabelText(/talher/i), { target: { value: 'sim' } });
     fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
 
-    // Etapa 3 — pagamento e envio
-    fireEvent.change(screen.getByLabelText(/Forma de pagamento/i), { target: { value: 'pix' } });
+    // Etapa 3 — pagamento, consentimento LGPD e envio
+    fireEvent.click(screen.getByRole('radio', { name: 'Pix' }));
+    // LGPD: sem o consentimento, o botão de envio não conclui o pedido
+    fireEvent.click(screen.getByRole('button', { name: /Enviar pedido pelo WhatsApp/i }));
+    await waitFor(() => expect(screen.getByText(/Autorize o uso dos seus dados/)).toBeInTheDocument());
+    expect(createOrder).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByLabelText(/Autorizo o uso dos meus dados/i));
     fireEvent.click(screen.getByRole('button', { name: /Enviar pedido pelo WhatsApp/i }));
 
     await waitFor(() => expect(createOrder).toHaveBeenCalledTimes(1));
     expect(createOrder.mock.calls[0][0]).toMatchObject({
       customer_name: 'JB',
+      customer_phone: '(99) 99999-9999',
       delivery_type: 'entrega',
+      district: 'Junco',
       payment_method: 'pix',
       total: 44
     });
@@ -226,20 +263,19 @@ describe('Tela: Modal de pedido', () => {
 });
 
 describe('Tela: Login do cliente (Supabase)', () => {
-  test('alterna para cadastro e valida senhas diferentes', async () => {
+  test('é apenas login: mostra erro do Supabase com senha errada', async () => {
+    // Login-only: só o admin acessa por enquanto, então não há cadastro.
     render(<CustomerAuth onClose={() => {}} onSignedIn={() => {}} />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Cadastro' }));
-    expect(screen.getByLabelText('Nome completo')).toBeInTheDocument();
+    expect(screen.queryByText('Cadastro')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Nome completo')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Confirmar senha')).not.toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText('Nome completo'), { target: { value: 'Ana Silva' } });
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.com' } });
-    fireEvent.change(screen.getByLabelText(/^Senha/), { target: { value: '123456' } });
-    fireEvent.change(screen.getByLabelText('Confirmar senha'), { target: { value: 'outra' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Criar minha conta' }));
+    fireEvent.change(screen.getByLabelText(/^Senha/), { target: { value: 'errada' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
 
-    // a validação HTML5 (required) passa e a validação React mostra o erro
-    expect(await screen.findByText('As senhas não conferem.')).toBeInTheDocument();
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
   });
 });
 

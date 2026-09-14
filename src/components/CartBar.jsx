@@ -2,10 +2,12 @@ import { calculateTotal, cartQuantity } from "../lib/cart.js";
 import { formatPrice } from "../lib/format.js";
 
 // Barra fixa do carrinho: mostra quantidade e total e abre o modal de pedido.
-export default function CartBar({ cart, onOpenOrderModal }) {
+// Com a loja fechada (fora das 11h–14h), a barra mostra o aviso de fechado e
+// não abre o checkout — o cliente pode navegar pelo cardápio à vontade.
+export default function CartBar({ cart, onOpenOrderModal, storeOpen = true }) {
   const quantity = cartQuantity(cart);
   const total = calculateTotal(cart);
-  const active = quantity > 0;
+  const active = storeOpen && quantity > 0;
 
   return (
     <div className="cart-bar">
@@ -13,12 +15,19 @@ export default function CartBar({ cart, onOpenOrderModal }) {
         type="button"
         className={`cart-button ${active ? "active" : ""}`}
         onClick={() => active && onOpenOrderModal()}
+        aria-disabled={!active}
       >
-        <span>
-          {quantity} {quantity === 1 ? "item" : "itens"}
-        </span>
-        <span>{formatPrice(total)}</span>
-        <span className="cart-count">Enviar Pedido WhatsApp</span>
+        {storeOpen ? (
+          <>
+            <span>
+              {quantity} {quantity === 1 ? "item" : "itens"}
+            </span>
+            <span>{formatPrice(total)}</span>
+            <span className="cart-count">Enviar Pedido WhatsApp</span>
+          </>
+        ) : (
+          <span className="cart-closed-msg">Fechado · aceitamos pedidos das 11h às 14h</span>
+        )}
       </button>
     </div>
   );

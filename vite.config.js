@@ -36,7 +36,8 @@ export default defineConfig(({ command, mode }) => {
       rollupOptions: {
         input: {
           main: resolve(__dirname, 'index.html'),
-          admin: resolve(__dirname, 'painel-jb-2026.html')
+          admin: resolve(__dirname, 'painel-jb-2026.html'),
+          privacy: resolve(__dirname, 'privacidade.html')
         }
       }
     }

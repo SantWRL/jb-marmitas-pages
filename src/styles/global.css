@@ -38,6 +38,17 @@ body.storefront {
   color: #0d0d0d;
 }
 
+/* Mobile: nada pode empurrar a página para os lados (vazamento de tela /
+   rolagem horizontal). `clip` não cria scroll container, então o menu
+   sticky do painel admin continua funcionando; o `hidden` antes é fallback
+   para navegadores sem suporte a clip. */
+html,
+body,
+#root {
+  overflow-x: hidden;
+  overflow-x: clip;
+}
+
 /* Barra de navegação: nunca deixa o menu cortado no celular */
 @media (max-width: 520px) {
   nav .flex-col.gap-5 {
@@ -196,4 +207,133 @@ body.storefront {
   margin-top: 8px;
   color: var(--accent);
   font-weight: 800;
+}
+
+/* LGPD: consentimento do cliente antes de enviar o pedido */
+.lgpd-consent {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  background: #0d0d0d;
+  color: #ddd;
+  font-size: .74rem;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.lgpd-consent input {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+}
+
+.lgpd-consent a {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* ===== Página de Política de Privacidade (LGPD) ===== */
+.privacy-header {
+  width: min(1060px, 100%);
+  margin: 0 auto;
+  padding: 26px 28px 0;
+}
+
+.privacy-card {
+  width: min(1060px, 100%);
+  margin: 0 auto;
+  padding: 34px 28px 60px;
+}
+
+.privacy-card h1 {
+  margin: 7px 0 4px;
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.7rem);
+  text-transform: uppercase;
+}
+
+.privacy-updated {
+  color: var(--muted);
+  font-size: .8rem;
+  margin-bottom: 26px;
+}
+
+.privacy-section {
+  margin-top: 22px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #171717;
+}
+
+.privacy-section h2 {
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.02rem;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.privacy-section p,
+.privacy-section li {
+  color: #bdbdbd;
+  font-size: .86rem;
+  line-height: 1.6;
+}
+
+.privacy-section ul {
+  margin-top: 6px;
+  padding-left: 20px;
+}
+
+.privacy-section li + li {
+  margin-top: 4px;
+}
+
+.privacy-section strong {
+  color: #fff;
+}
+
+.privacy-section a {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* LGPD: recado de uso responsável dos dados dentro do painel admin */
+.admin-lgpd-note {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  background: #fff3e0;
+  color: #5d4037;
+  font-size: .78rem;
+  line-height: 1.5;
+}
+
+.admin-lgpd-note a {
+  color: #e65100;
+  font-weight: 700;
+}
+
+/* LGPD: aviso de privacidade no rodapé (fundo vermelho do tema) */
+.footer-legal {
+  width: 100%;
+  margin-top: 10px;
+  color: rgba(255, 255, 255, .85);
+  font-size: .74rem;
+  text-align: center;
+}
+
+.footer-legal a {
+  color: #fff;
+  font-weight: 700;
+  text-decoration: underline;
 }

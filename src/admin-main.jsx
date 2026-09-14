@@ -256,7 +256,10 @@ export function OrdersList({ orders, onChanged }) {
             <strong>{order.customer_name}</strong>
             <span className={`order-status status-${order.status}`}>{STATUS_LABELS[order.status] || order.status}</span>
           </div>
-          <small>{new Date(order.created_at).toLocaleString('pt-BR')}</small>
+          <small>
+            {order.order_number ? `#${String(order.order_number).padStart(3, '0')} — ` : ''}
+            {new Date(order.created_at).toLocaleString('pt-BR')}
+          </small>
           <ul className="order-items">
             {(order.items || []).map((item, index) => (
               <li key={index}>{item.qty}x {item.name} — {formatPrice(item.price * item.qty)}</li>
@@ -265,7 +268,8 @@ export function OrdersList({ orders, onChanged }) {
           <p className="order-meta">
             {order.delivery_type === 'retirada'
               ? '🏠 Retirada no local'
-              : `📍 ${order.address}${order.reference ? ` (ref.: ${order.reference})` : ''}`}
+              : `📍 ${order.address}${order.district ? ` — ${order.district}` : ''}${order.reference ? ` (ref.: ${order.reference})` : ''}`}
+            {order.customer_phone ? ` • 📞 ${order.customer_phone}` : ''}
             {' • '}
             {order.cutlery ? '🍽️ Com talher' : 'Sem talher'}
             {' • '}
@@ -378,7 +382,20 @@ export function AdminApp() {
 
         {tab === 'pedidos' ? (
           <section>
-            <div className="admin-toolbar"><p>Pedidos feitos pelo site aparecem aqui em tempo real.</p></div>
+            <div className="admin-toolbar">
+              <p>Pedidos feitos pelo site aparecem aqui em tempo real.</p>
+            </div>
+            <p className="admin-lgpd-note">
+              🔒 <strong>LGPD:</strong> os dados dos clientes (nome, telefone e endereço)
+              servem <strong>apenas para atender o pedido</strong>. Não compartilhe com
+              terceiros, não use para divulgação e <strong>exclua o pedido</strong> (botão
+              abaixo de cada pedido) quando o cliente pedir ou quando não for mais
+              necessário guardar. Dúvidas do cliente? Encaminhe à{' '}
+              <a href="./privacidade.html" target="_blank" rel="noreferrer">
+                Política de Privacidade
+              </a>
+              .
+            </p>
             <OrdersList orders={orders} onChanged={loadAll} />
           </section>
         ) : (

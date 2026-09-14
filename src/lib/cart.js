@@ -50,38 +50,129 @@ export function removeItem(cart, productId) {
   return updatedCart;
 }
 
-export function formatWhatsAppMessage(
+// Cidade usada no link do Google Maps (o cliente só digita rua e bairro).
+const CITY = 'Balsas MA';
+
+// Link "como chegar" do Google Maps com o endereço do cliente.
+// Cada campo vai numa parte própria da query (?q=rua, número, bairro, cidade)
+// para o Google achar certo mesmo com endereços incompletos.
+export function buildMapsLink({ street = '', number = '', district = '', reference = '' }) {
+  const addressParts = [street.trim(), number.trim(), district.trim(), reference.trim()].filter(Boolean);
+  if (!addressParts.length) return '';
+  addressParts.push(CITY);
+  return `https://maps.google.com/?q=${encodeURIComponent(addressParts.join(', '))}`;
+}
+
+// Converte "(89) 99919-5466" em "5589999195466" (formato wa.me).
+export function formatCustomerPhone(raw) {
+  const digits = String(raw || '').replace(/\D/g, '');
+  if (digits.length < 10 || digits.length > 13) return '';
+  if (digits.startsWith('55')) return digits;
+  return `55${digits}`;
+}
+
+// Formata o número do pedido com 3 dígitos: 224 -> "224", 7 -> "007".
+export function formatOrderNumber(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num) || num <= 0) return '';
+  return String(Math.floor(num)).padStart(3, '0');
+}
+
+// Monta a mensagem final do WhatsApp no formato oficial do painel:
+//
+//   #### NOVO PEDIDO ####
+//   #️⃣ Nº pedido: 007
+//   feito em 07/09/2026 22:52
+//   👤 Teresa geovana
+//   📞 (89) 99919-5466
+//   🛵 Endereço de entrega ...
+//   📍 https://maps.google.com/?q=...
+//   ------- ITENS DO PEDIDO -------
+//   *1 x Marmita* ...
+//   💵 1 x R$ 22,00 = R$ 22,00
+//   -------------------------------
+//   SUBTOTAL: R$ 22,00
+//   ENTREGA: R$ 0,00
+//   *VALOR FINAL: R$ 22,00*
+//   PAGAMENTO: *Pix*: R$ 22,00
+//   🕐 Prazo para entrega: 30 a 40 min
+export function formatWhatsAppMessage({
   cart,
-  clientName,
-  clientAddress,
-  phone,
-  paymentDetails = '',
+  orderNumber,
+  orderDate,
+  customerName,
+  customerPhone,
+  deliveryType = 'entrega',
+  street = '',
+  number = '',
+  district = '',
   reference = '',
-  cutlery = '',
-  deliveryType = ''
-) {
-  let message = '*NOVO PEDIDO DE MARMITA*\n\n';
+  complement = '',
+  paymentMethod,
+  paymentDetails = '',
+  deliveryFee = 0,
+  deliveryTime = '30 a 40 min'
+}) {
   const total = calculateTotal(cart);
+  const when = orderDate || new Date();
+  // "07/09/2026 22:52" — data e hora separadas porque o toLocaleString
+  // completo interpõe uma vírgula entre elas.
+  const dateLabel = `${when.toLocaleDateString('pt-BR')} ${when.toLocaleTimeString('pt-BR', {
+    hour: '2-digit',
+    minute: '2-digit'
+  })}`;
 
-  for (const id in cart) {
-    const item = cart[id];
-    message += `• ${item.qty}x ${item.name} - ${formatPrice(item.qty * item.price)}\n`;
+  const lines = [];
+  lines.push('#### NOVO PEDIDO ####');
+  if (orderNumber) lines.push(`#️⃣ Nº pedido: ${formatOrderNumber(orderNumber) || orderNumber}`);
+  lines.push(`feito em ${dateLabel}`);
+
+  if (customerName) lines.push(`👤 ${customerName}`);
+
+  const phoneDigits = formatCustomerPhone(customerPhone);
+  if (phoneDigits) {
+    const local = phoneDigits.replace(/^55/, '');
+    const ddd = local.slice(0, 2);
+    const rest = local.length > 10 ? `${local.slice(2, 7)}-${local.slice(7)}` : `${local.slice(2, 6)}-${local.slice(6)}`;
+    lines.push(`📞 (${ddd}) ${rest}`);
   }
-
-  message += `\n*TOTAL:* ${formatPrice(total)}`;
-  if (clientName) message += `\n\n*Cliente:* ${clientName}`;
 
   if (deliveryType === 'retirada') {
-    message += `\n*Entrega:* Retirada no local`;
+    lines.push('🏠 Retirada no local');
   } else {
-    if (clientAddress) message += `\n*Endereço:* ${clientAddress}`;
-    if (reference) message += `\n*Ponto de referência:* ${reference}`;
+    lines.push('🛵 Endereço de entrega');
+    const streetLine = [street.trim(), number.trim()].filter(Boolean).join(', ');
+    if (streetLine) lines.push(streetLine);
+    if (complement.trim()) lines.push(`Complemento: ${complement.trim()}`);
+    if (district.trim()) lines.push(`Bairro: ${district.trim()}`);
+    if (reference.trim()) lines.push(`(${reference.trim()})`);
+    const maps = buildMapsLink({ street, number, district, reference });
+    if (maps) {
+      lines.push('Link do endereço:');
+      lines.push(maps);
+    }
   }
 
-  if (cutlery) message += `\n*Talher:* ${cutlery}`;
-  if (paymentDetails) message += `\n\n*Pagamento:* ${paymentDetails}`;
+  lines.push('------- ITENS DO PEDIDO -------');
+  for (const item of Object.values(cart)) {
+    lines.push(`*${item.qty} x ${item.name}*`);
+    lines.push(`💵 ${item.qty} x ${formatPrice(item.price)} = ${formatPrice(item.qty * item.price)}`);
+  }
 
-  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  lines.push('-------------------------------');
+  lines.push(`SUBTOTAL: ${formatPrice(total)}`);
+  lines.push(`ENTREGA: ${formatPrice(deliveryFee)}`);
+  lines.push(`*VALOR FINAL: ${formatPrice(total + deliveryFee)}*`);
+
+  lines.push('PAGAMENTO');
+  lines.push(`*${paymentDetails || paymentMethod || 'A combinar'}*: ${formatPrice(total + deliveryFee)}`);
+
+  if (deliveryType !== 'retirada') {
+    lines.push(`🕐 Prazo para entrega: ${deliveryTime}`);
+  }
+
+  const message = lines.join('\n');
+  return `https://wa.me/${PHONE}?text=${encodeURIComponent(message)}`;
 }
 
 export { PHONE };

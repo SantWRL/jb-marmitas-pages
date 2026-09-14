@@ -4,6 +4,26 @@
 process.env.VITE_SUPABASE_URL = 'https://fake.supabase.co';
 process.env.VITE_SUPABASE_PUBLISHABLE_KEY = 'test-key';
 
+// Horário de funcionamento congelado como ABERTO para os testes de tela
+// passarem em qualquer hora do dia (a lógica real de 11h-14h é coberta no
+// projeto "unit", tests/hours.test.js). Testes que precisam da loja FECHADA
+// chamam __setStoreOpen(false) e voltam com __resetStoreOpen().
+jest.mock('../../src/lib/hours.js', () => {
+  const actual = jest.requireActual('../../src/lib/hours.js');
+  let storeOpen = true;
+  return {
+    ...actual,
+    __setStoreOpen: (value) => {
+      storeOpen = value;
+    },
+    __resetStoreOpen: () => {
+      storeOpen = true;
+    },
+    isWithinBusinessHours: () => storeOpen,
+    useBusinessHours: () => storeOpen
+  };
+});
+
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
 
@@ -52,8 +72,10 @@ export const sampleOrders = [
     created_at: '2026-09-09T12:00:00Z',
     status: 'novo',
     customer_name: 'JB',
+    customer_phone: '(99) 99999-9999',
     delivery_type: 'entrega',
     address: 'Rua Central, 10',
+    district: 'Junco',
     reference: 'Próximo à praça',
     cutlery: true,
     payment_method: 'pix',

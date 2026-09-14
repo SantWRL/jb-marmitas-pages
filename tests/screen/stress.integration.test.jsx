@@ -80,14 +80,20 @@ describe('Condição de corrida: spam de cliques na interface real', () => {
     render(<OrderModal cart={cart} onClose={() => {}} onDone={() => {}} />);
 
     // Etapa 1
-    fireEvent.change(screen.getByLabelText(/Endereço em Balsas/i), {
-      target: { value: 'Rua Central, 10' }
-    });
+    fireEvent.change(screen.getByLabelText(/^Rua$/), { target: { value: 'Rua Central' } });
+    fireEvent.change(screen.getByLabelText(/^Número$/), { target: { value: '10' } });
+    fireEvent.change(screen.getByLabelText(/^Bairro$/), { target: { value: 'Junco' } });
     fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
 
     // Etapa 2
     fireEvent.change(screen.getByLabelText(/Seu nome/i), { target: { value: 'JB' } });
+    fireEvent.change(screen.getByLabelText(/Seu WhatsApp/i), {
+      target: { value: '(99) 99999-9999' }
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
+
+    // Etapa 3: consentimento LGPD obrigatório antes do envio
+    fireEvent.click(screen.getByLabelText(/Autorizo o uso dos meus dados/i));
 
     // Etapa 3: spam de 20 cliques enquanto o envio está em voo
     const enviar = screen.getByRole('button', { name: /Enviar pedido pelo WhatsApp/i });
@@ -164,6 +170,24 @@ describe('Integração CSS↔JSX: toda classe usada existe na folha de estilo', 
     const values = Object.values(layers);
     expect(values).toEqual([...new Set(values)]);
   });
+
+  test('sem vazamento de tela no mobile: html/body cortam overflow horizontal', () => {
+    const globalCss = readSource('/src/styles/global.css');
+
+    // Rede de segurança: nada empurra a página para os lados (scroll
+    // horizontal). clip > hidden porque não cria scroll container.
+    expect(globalCss).toMatch(/html,\s*\n?\s*body,\s*\n?\s*#root\s*\{[^}]*overflow-x:\s*hidden/);
+    expect(globalCss).toMatch(/overflow-x:\s*clip/);
+  });
+
+  test('nav do menu quebra linha no mobile em vez de vazar', () => {
+    const nav = readSource('/src/components/MenuNav.jsx');
+
+    expect(nav).toContain('flex-wrap');
+    expect(nav).toContain('min-h-24');
+    // Desktop mantém uma linha só.
+    expect(nav).toContain('tablet:flex-nowrap');
+  });
 });
 
 describe('Regra de negócio: o site é só de marmita comum (sem "fit")', () => {
@@ -204,11 +228,12 @@ describe('Regra de negócio: o site é só de marmita comum (sem "fit")', () => 
 });
 
 describe('Deploy e estrutura do projeto', () => {
-  test('workflow de deploy existe na raiz deste repo (único lugar que o GitHub lê)', () => {
-    const wf = readApp('/.github/workflows/deploy.yml');
+  test('workflow de CI existe e roda testes + build com as chaves do Supabase', () => {
+    // O deploy é da Vercel (push na main); o GitHub só roda o CI.
+    const wf = readApp('/.github/workflows/ci.yml');
 
     expect(wf).toContain('npm test');
-    expect(wf).toContain('path: dist');
+    expect(wf).toContain('npm run build');
     expect(wf).toContain('VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}');
   });
 
